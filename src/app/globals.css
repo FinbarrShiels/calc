@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+}
+
+body {
+  @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen;
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+  }
+
+  body {
+    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Calculator Styles with Enhanced Contrast */
+  .calculator-container {
+    @apply bg-white dark:bg-gray-800 rounded-lg p-8 shadow-xl border border-gray-200 dark:border-gray-700;
+  }
+
+  .calculator-section {
+    @apply bg-gray-50 dark:bg-gray-700 rounded-lg p-6 shadow-md mb-6 border border-gray-200 dark:border-gray-600;
+  }
+
+  .calculator-section-header {
+    @apply text-xl font-semibold mb-4 text-gray-900 dark:text-white;
+  }
+
+  .calculator-section-description {
+    @apply text-sm text-gray-600 dark:text-gray-300 mb-6;
+  }
+
+  .calculator-input {
+    @apply w-full px-4 py-2 
+           bg-white dark:bg-gray-600 
+           text-gray-900 dark:text-white 
+           border border-gray-300 dark:border-gray-500 
+           rounded-md
+           focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+
+  .calculator-label {
+    @apply block text-base font-medium 
+           text-gray-700 dark:text-gray-200 
+           mb-2;
+  }
+
+  .calculator-button {
+    @apply w-full bg-blue-600 
+           hover:bg-blue-700 
+           text-white font-semibold 
+           py-3 px-6 
+           rounded-md 
+           transition duration-200 
+           shadow-sm;
+  }
+
+  .calculator-result {
+    @apply mt-6 p-6 
+           bg-white dark:bg-gray-600 
+           rounded-lg 
+           border border-gray-300 dark:border-gray-500
+           text-gray-900 dark:text-white;
+  }
+
+  .calculator-select {
+    @apply w-full px-4 py-2 
+           bg-white dark:bg-gray-600 
+           text-gray-900 dark:text-white 
+           border border-gray-300 dark:border-gray-500 
+           rounded-md
+           focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+
+  /* Additional Calculator Components */
+  .calculator-card {
+    @apply bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600;
+  }
+
+  .calculator-card-alt {
+    @apply bg-white dark:bg-gray-600 p-4 rounded-lg border border-gray-200 dark:border-gray-500;
+  }
+
+  .calculator-table {
+    @apply min-w-full divide-y divide-gray-200 dark:divide-gray-700;
+  }
+
+  .calculator-table-header {
+    @apply px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider;
+  }
+
+  .calculator-table-cell {
+    @apply px-3 py-2 text-sm text-gray-700 dark:text-gray-300;
+  }
+
+  /* Utility classes for calculator components */
+  .calculator-text-primary {
+    @apply text-blue-600 dark:text-blue-400;
+  }
+
+  .calculator-text-secondary {
+    @apply text-gray-600 dark:text-gray-300;
+  }
+
+  .calculator-bg-primary {
+    @apply bg-blue-600 dark:bg-blue-700 text-white;
+  }
+
+  .calculator-bg-secondary {
+    @apply bg-gray-100 dark:bg-gray-800;
+  }
+
+  .calculator-bg-tertiary {
+    @apply bg-white dark:bg-gray-700;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
