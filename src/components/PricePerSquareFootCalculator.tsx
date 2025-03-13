@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Calculator } from '@/data/calculators';
 import { Chart } from 'chart.js/auto';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface PricePerSquareFootCalculatorProps {
   calculator?: Calculator;
@@ -247,7 +247,7 @@ const PricePerSquareFootCalculator: React.FC<PricePerSquareFootCalculatorProps> 
       <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 p-6">
         {/* Left Box - Inputs */}
         <div className="calculator-card-alt p-4 sm:p-6 rounded-lg shadow-lg">
-          <h2 className={calculatorSectionHeaderClasses}>Price Per Square Foot Calculator</h2>
+          <h2 className="calculator-section-header">Price Per Square Foot Calculator</h2>
           
           <div className="space-y-4">
             <div>
@@ -256,7 +256,7 @@ const PricePerSquareFootCalculator: React.FC<PricePerSquareFootCalculatorProps> 
               </label>
               <select
                 id="currency"
-                className={inputClasses}
+                className="calculator-input"
                 value={selectedCurrency}
                 onChange={handleCurrencyChange}
               >
@@ -277,7 +277,7 @@ const PricePerSquareFootCalculator: React.FC<PricePerSquareFootCalculatorProps> 
                 <input
                   type="tel"
                   id="propertyPrice"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={propertyPrice} {...numericInputProps}
                   onChange={(e) => setPropertyPrice(Number(e.target.value))}
                 />
@@ -292,7 +292,7 @@ const PricePerSquareFootCalculator: React.FC<PricePerSquareFootCalculatorProps> 
                 <input
                   type="tel"
                   id="squareFootage"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={squareFootage} {...numericInputProps}
                   onChange={(e) => setSquareFootage(Number(e.target.value))}
                 />
@@ -306,7 +306,7 @@ const PricePerSquareFootCalculator: React.FC<PricePerSquareFootCalculatorProps> 
               </label>
               <select
                 id="includeExterior"
-                className={inputClasses}
+                className="calculator-input"
                 value={includeExterior.toString()}
                 onChange={handleIncludeExteriorChange}
               >
@@ -324,7 +324,7 @@ const PricePerSquareFootCalculator: React.FC<PricePerSquareFootCalculatorProps> 
                   <input
                     type="tel"
                     id="exteriorFootage"
-                    className={inputClasses}
+                    className="calculator-input"
                     value={exteriorFootage} {...numericInputProps}
                     onChange={(e) => setExteriorFootage(Number(e.target.value))}
                   />
@@ -344,14 +344,14 @@ const PricePerSquareFootCalculator: React.FC<PricePerSquareFootCalculatorProps> 
                   <input
                     type="tel"
                     id="propertyName"
-                    className={inputClasses}
+                    className="calculator-input"
                     value={propertyName} {...numericInputProps}
                     onChange={(e) => setPropertyName(e.target.value)}
                   />
                 </div>
                 
                 <button
-                  className={inputClasses}
+                  className="calculator-input"
                   onClick={addPropertyComparison}
                 >
                   Add Property to Comparison
@@ -363,16 +363,16 @@ const PricePerSquareFootCalculator: React.FC<PricePerSquareFootCalculatorProps> 
         
         {/* Right Box - Results */}
         <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
-          <h2 className={calculatorSectionHeaderClasses}>Results</h2>
+          <h2 className="calculator-section-header">Results</h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 sm:mb-8">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Price Per Square Foot</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Price Per Square Foot</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">{formatCurrency(pricePerSquareFoot)}</div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Total Square Footage</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Square Footage</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">{totalSquareFootage.toLocaleString()} sq ft</div>
               {includeExterior && (
                 <div className="text-xs text-gray-400 mt-1">
@@ -382,14 +382,14 @@ const PricePerSquareFootCalculator: React.FC<PricePerSquareFootCalculatorProps> 
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Property Price</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Property Price</div>
               <div className="text-xl sm:text-2xl font-bold text-orange-400">{formatCurrency(propertyPrice)}</div>
             </div>
           </div>
           
           {comparisons.length > 0 && (
             <div>
-              <h3 className={calculatorSectionHeaderClasses}>Property Comparison</h3>
+              <h3 className="calculator-section-header">Property Comparison</h3>
               
               <div className="h-64 sm:h-80 mb-6">
                 <canvas ref={comparisonChartRef}></canvas>

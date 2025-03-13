@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface StoneToPoundsCalculatorProps {
   calculator?: Calculator;
@@ -80,7 +80,7 @@ const StoneToPoundsCalculator: React.FC<StoneToPoundsCalculatorProps> = ({ calcu
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
       <div className="p-6">
-        <h2 className={calculatorSectionHeaderClasses}>Stone to Pounds Calculator</h2>
+        <h2 className="calculator-section-header">Stone to Pounds Calculator</h2>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -92,7 +92,7 @@ const StoneToPoundsCalculator: React.FC<StoneToPoundsCalculatorProps> = ({ calcu
                 <input
                   type="tel"
                   id="stone"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={stoneStr} {...numericInputProps}
                   onChange={handleStoneChange}
                 />
@@ -108,7 +108,7 @@ const StoneToPoundsCalculator: React.FC<StoneToPoundsCalculatorProps> = ({ calcu
                 <input
                   type="tel"
                   id="pounds"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={poundsStr} {...numericInputProps}
                   onChange={handlePoundsChange}
                 />
@@ -123,7 +123,7 @@ const StoneToPoundsCalculator: React.FC<StoneToPoundsCalculatorProps> = ({ calcu
             </label>
             <select
               id="precision"
-              className={inputClasses}
+              className="calculator-input"
               value={precision}
               onChange={handlePrecisionChange}
             >
@@ -137,32 +137,32 @@ const StoneToPoundsCalculator: React.FC<StoneToPoundsCalculatorProps> = ({ calcu
         </div>
         
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+          <h3 className="calculator-section-header">Conversion Results</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Stone and Pounds</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Stone and Pounds</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">
                 {stoneStr === '' ? '0' : parseFloat(stoneStr).toLocaleString()} st {poundsStr === '' ? '0' : parseFloat(poundsStr).toLocaleString()} lb
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Total Pounds</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Pounds</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">
                 {totalPounds.toFixed(precision)} lb
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Kilograms</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Kilograms</div>
               <div className="text-xl sm:text-2xl font-bold text-purple-400">
                 {kilograms.toFixed(precision)} kg
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-              <div className={resultLabelClasses}>Conversion Formula</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
               <div className="text-md font-medium text-gray-300 mt-1">
                 ({stoneStr === '' ? '0' : parseFloat(stoneStr).toLocaleString()} stone × 14) + {poundsStr === '' ? '0' : parseFloat(poundsStr).toLocaleString()} pounds = {totalPounds.toFixed(precision)} pounds
               </div>
@@ -174,7 +174,7 @@ const StoneToPoundsCalculator: React.FC<StoneToPoundsCalculatorProps> = ({ calcu
         </div>
         
         <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Common Conversions</h3>
+          <h3 className="calculator-section-header">Common Conversions</h3>
           
           <div className="overflow-x-auto">
             <table className="calculator-table">

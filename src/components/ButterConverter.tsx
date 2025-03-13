@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface ButterConverterProps {
   calculator?: Calculator;
@@ -260,7 +260,7 @@ const ButterConverter: React.FC<ButterConverterProps> = ({ calculator }) => {
           </div>
           
           {/* Conversion Explanation */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Butter Measurement Tips</h3>
             <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
               <li>• 1 stick = ½ cup = 8 tablespoons = 113g</li>
@@ -277,7 +277,7 @@ const ButterConverter: React.FC<ButterConverterProps> = ({ calculator }) => {
       <h2 className="calculator-section-header">Result</h2>
           
           {/* US Measurements */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-3">US Measurements</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>

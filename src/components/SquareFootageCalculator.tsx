@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface SquareFootageCalculatorProps {
   calculator?: Calculator;
@@ -736,12 +736,12 @@ const SquareFootageCalculator: React.FC<SquareFootageCalculatorProps> = ({ calcu
           
           {/* Shape Info - Only visible on desktop */}
           <div className="hidden md:block">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Shape Information</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Different shapes require different measurements:
               </p>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Rectangle:</strong> Length × Width</li>
                 <li><strong>Square:</strong> Side × Side</li>
                 <li><strong>Circle:</strong> π × Radius²</li>
@@ -763,10 +763,10 @@ const SquareFootageCalculator: React.FC<SquareFootageCalculatorProps> = ({ calcu
           
           {/* Results */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Area
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {formatNumber(area)} {areaUnit}
             </div>
             {isBorderArea && (
@@ -778,12 +778,12 @@ const SquareFootageCalculator: React.FC<SquareFootageCalculatorProps> = ({ calcu
           
           {/* Shape Info - Only visible on mobile */}
           <div className="block md:hidden">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Shape Information</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Different shapes require different measurements:
               </p>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Rectangle:</strong> Length × Width</li>
                 <li><strong>Square:</strong> Side × Side</li>
                 <li><strong>Circle:</strong> π × Radius²</li>
@@ -796,7 +796,7 @@ const SquareFootageCalculator: React.FC<SquareFootageCalculatorProps> = ({ calcu
           {/* Usage Tips */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Common Uses</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li><strong>Flooring:</strong> Calculate carpet, tile, or hardwood needed</li>
               <li><strong>Painting:</strong> Determine paint required for walls or ceilings</li>
               <li><strong>Landscaping:</strong> Measure areas for sod, mulch, or ground coverings</li>

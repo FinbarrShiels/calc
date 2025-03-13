@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface LedSavingsCalculatorProps {
   calculator?: Calculator;
@@ -351,9 +351,9 @@ const LedSavingsCalculator: React.FC<LedSavingsCalculatorProps> = ({ calculator 
           
           {/* LED Info - Only visible on desktop */}
           <div className="hidden md:block">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">LED Bulb Benefits</h3>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Energy Efficiency:</strong> Use up to 90% less energy than incandescent bulbs</li>
                 <li><strong>Longevity:</strong> Last 15-25 times longer than traditional bulbs</li>
                 <li><strong>Durability:</strong> More resistant to breakage and vibrations</li>
@@ -370,26 +370,26 @@ const LedSavingsCalculator: React.FC<LedSavingsCalculatorProps> = ({ calculator 
           <div className="grid grid-cols-1 gap-4">
             {/* Annual Energy Savings */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Annual Energy Savings
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(annualSavingsKwh)} kWh
               </div>
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 {formatNumber(annualSavingsKwh / parseFloat(bulbQuantity))} kWh per bulb
               </div>
             </div>
             
             {/* Annual Cost Savings */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Annual Cost Savings
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatCurrency(annualSavingsMoney)}
               </div>
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 {formatCurrency(annualSavingsMoney / parseFloat(bulbQuantity))} per bulb
               </div>
             </div>
@@ -397,13 +397,13 @@ const LedSavingsCalculator: React.FC<LedSavingsCalculatorProps> = ({ calculator 
             {/* Payback Period */}
             {includeBulbPrice && (
               <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-                <div className={resultLabelClasses}>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Payback Period
                 </div>
-                <div className={resultValueClasses}>
+                <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                   {formatTime(paybackPeriod)}
                 </div>
-                <div className={resultLabelClasses}>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Total investment: {formatCurrency(totalBulbCost)}
                 </div>
               </div>
@@ -411,13 +411,13 @@ const LedSavingsCalculator: React.FC<LedSavingsCalculatorProps> = ({ calculator 
             
             {/* CO2 Reduction */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Annual CO₂ Reduction
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(co2Reduction)} kg
               </div>
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Equivalent to planting {formatNumber(co2Reduction / 21)} trees
               </div>
             </div>
@@ -425,9 +425,9 @@ const LedSavingsCalculator: React.FC<LedSavingsCalculatorProps> = ({ calculator 
           
           {/* LED Info - Only visible on mobile */}
           <div className="block md:hidden">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">LED Bulb Benefits</h3>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Energy Efficiency:</strong> Use up to 90% less energy than incandescent bulbs</li>
                 <li><strong>Longevity:</strong> Last 15-25 times longer than traditional bulbs</li>
                 <li><strong>Durability:</strong> More resistant to breakage and vibrations</li>

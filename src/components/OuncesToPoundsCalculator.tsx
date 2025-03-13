@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface OuncesToPoundsCalculatorProps {
   calculator?: Calculator;
@@ -72,7 +72,7 @@ const OuncesToPoundsCalculator: React.FC<OuncesToPoundsCalculatorProps> = ({ cal
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
       <div className="p-6">
-        <h2 className={calculatorSectionHeaderClasses}>Ounces to Pounds Calculator</h2>
+        <h2 className="calculator-section-header">Ounces to Pounds Calculator</h2>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
           <div className="grid grid-cols-1 gap-4 mb-4">
@@ -84,7 +84,7 @@ const OuncesToPoundsCalculator: React.FC<OuncesToPoundsCalculatorProps> = ({ cal
                 <input
                   type="tel"
                   id="ounces"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={ouncesStr} {...numericInputProps}
                   onChange={handleOuncesChange}
                 />
@@ -99,7 +99,7 @@ const OuncesToPoundsCalculator: React.FC<OuncesToPoundsCalculatorProps> = ({ cal
             </label>
             <select
               id="precision"
-              className={inputClasses}
+              className="calculator-input"
               value={precision}
               onChange={handlePrecisionChange}
             >
@@ -113,32 +113,32 @@ const OuncesToPoundsCalculator: React.FC<OuncesToPoundsCalculatorProps> = ({ cal
         </div>
         
         <div className="calculator-card p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+          <h3 className="calculator-section-header">Conversion Results</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Ounces</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Ounces</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">
                 {ouncesStr === '' ? '0' : parseFloat(ouncesStr).toLocaleString()} oz
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Pounds (Decimal)</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Pounds (Decimal)</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">
                 {pounds.toFixed(precision)} lb
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-              <div className={resultLabelClasses}>Pounds and Ounces</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Pounds and Ounces</div>
               <div className="text-xl sm:text-2xl font-bold text-purple-400">
                 {formatPoundsAndOunces(ouncesStr === '' ? 0 : parseFloat(ouncesStr))}
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-              <div className={resultLabelClasses}>Conversion Formula</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
               <div className="text-md font-medium text-gray-300 mt-1">
                 {ouncesStr === '' ? '0' : parseFloat(ouncesStr).toLocaleString()} ounces × 0.0625 = {pounds.toFixed(precision)} pounds
               </div>
@@ -150,7 +150,7 @@ const OuncesToPoundsCalculator: React.FC<OuncesToPoundsCalculatorProps> = ({ cal
         </div>
         
         <div className="mt-8 calculator-card p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Common Conversions</h3>
+          <h3 className="calculator-section-header">Common Conversions</h3>
           
           <div className="overflow-x-auto">
             <table className="calculator-table">

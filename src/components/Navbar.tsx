@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Define the types for our menu items
 type MenuItem = {
@@ -23,6 +24,9 @@ type MenuCategory = {
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<number | null>(null);
+  const [activeMobileCategory, setActiveMobileCategory] = useState<number | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   // Define main menu categories
@@ -221,353 +225,297 @@ export default function Navbar() {
     }
   ];
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setActiveCategory(null);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setActiveMobileCategory(null);
+  }, [pathname]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveCategory(null);
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Toggle mobile menu
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  // Function to handle desktop dropdown toggle with direct DOM manipulation
-  const handleDesktopDropdownToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    // Get the clicked element
-    const target = e.currentTarget as HTMLElement;
-    
-    // Get the dropdown content
-    const dropdownId = target.getAttribute('data-dropdown-id');
-    const dropdown = document.getElementById(`desktop-dropdown-${dropdownId}`);
-    
-    if (!dropdown) return;
-    
-    // Close all other dropdowns first
-    const allDropdowns = document.querySelectorAll('.desktop-dropdown');
-    allDropdowns.forEach((el) => {
-      if (el.id !== `desktop-dropdown-${dropdownId}`) {
-        el.classList.add('hidden');
-        
-        // Reset all other dropdown buttons
-        const buttonId = el.id.replace('desktop-dropdown-', '');
-        const otherButton = document.querySelector(`[data-dropdown-id="${buttonId}"]`);
-        if (otherButton) {
-          const arrow = otherButton.querySelector('svg');
-          if (arrow) arrow.classList.remove('transform', 'rotate-180');
-        }
-      }
-    });
-    
-    // Toggle the current dropdown
-    if (dropdown.classList.contains('hidden')) {
-      dropdown.classList.remove('hidden');
-      
-      // Rotate the arrow
-      const arrow = target.querySelector('svg');
-      if (arrow) arrow.classList.add('transform', 'rotate-180');
-    } else {
-      dropdown.classList.add('hidden');
-      
-      // Reset the arrow
-      const arrow = target.querySelector('svg');
-      if (arrow) arrow.classList.remove('transform', 'rotate-180');
+    if (mobileMenuOpen) {
+      setActiveMobileCategory(null);
     }
   };
-  
-  // Function to close all desktop dropdowns
-  const closeAllDesktopDropdowns = () => {
-    const allDropdowns = document.querySelectorAll('.desktop-dropdown');
-    allDropdowns.forEach((el) => {
-      el.classList.add('hidden');
-    });
+
+  // Toggle mobile category
+  const toggleMobileCategory = (index: number) => {
+    setActiveMobileCategory(activeMobileCategory === index ? null : index);
   };
 
-  // Function to handle mobile accordion toggle with direct DOM manipulation
-  const handleMobileAccordionToggle = (e: React.MouseEvent) => {
-    // Get the clicked button
-    const button = e.currentTarget as HTMLButtonElement;
-    
-    // Get the content panel that follows this button
-    const content = button.nextElementSibling as HTMLDivElement;
-    
-    // First, close all other open dropdowns
-    const allDropdownContents = document.querySelectorAll('.mobile-dropdown-content');
-    const allDropdownButtons = document.querySelectorAll('.mobile-dropdown-button');
-    
-    allDropdownContents.forEach((dropdownContent) => {
-      // Skip the current dropdown
-      if (dropdownContent !== content) {
-        dropdownContent.classList.add('hidden');
-      }
-    });
-    
-    allDropdownButtons.forEach((dropdownButton) => {
-      // Skip the current button
-      if (dropdownButton !== button) {
-        dropdownButton.classList.remove('bg-blue-600', 'text-white');
-        dropdownButton.classList.add('bg-gray-100', 'text-gray-800');
-        
-        // Reset arrow rotation
-        const arrow = dropdownButton.querySelector('svg');
-        if (arrow) arrow.classList.remove('transform', 'rotate-180');
-      }
-    });
-    
-    // Toggle the current dropdown
-    if (content.classList.contains('hidden')) {
-      // If it's hidden, show it and update the button style
-      content.classList.remove('hidden');
-      button.classList.add('bg-blue-600', 'text-white');
-      button.classList.remove('bg-gray-100', 'text-gray-800');
-      
-      // Find the arrow icon and rotate it
-      const arrow = button.querySelector('svg');
-      if (arrow) arrow.classList.add('transform', 'rotate-180');
-    } else {
-      // If it's visible, hide it and update the button style
-      content.classList.add('hidden');
-      button.classList.remove('bg-blue-600', 'text-white');
-      button.classList.add('bg-gray-100', 'text-gray-800');
-      
-      // Find the arrow icon and reset rotation
-      const arrow = button.querySelector('svg');
-      if (arrow) arrow.classList.remove('transform', 'rotate-180');
-    }
+  // Handle desktop category hover
+  const handleCategoryHover = (index: number) => {
+    setActiveCategory(index);
   };
 
   return (
-    <>
-      <nav className="bg-white shadow-md dark:bg-gray-800 sticky top-0 z-50">
-        <div className="container mx-auto px-4" style={{ maxWidth: '1140px' }}>
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link href="/" className="flex-shrink-0">
-                <img 
-                  src="/calc-hub-nav-new.svg" 
-                  alt="Calculator.io" 
-                  width="300" 
-                  height="100" 
+    <nav className="bg-white shadow-md dark:bg-gray-800 sticky top-0 z-50" ref={navRef}>
+      <div className="container mx-auto px-4" style={{ maxWidth: '1140px' }}>
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link href="/" className="flex-shrink-0">
+              <img 
+                src="/calc-hub-nav-new.svg" 
+                alt="Calculator.io" 
+                width="300" 
+                height="100" 
                 className="h-8 w-auto"
               />
             </Link>
           </div>
           
-            {/* Desktop navigation */}
-            <div className="hidden md:flex md:items-center md:space-x-4">
-              {mainMenuCategories.map((category, idx) => (
-                <div key={idx} className="relative group">
-                  <button
-                    data-dropdown-id={idx}
-                    onClick={handleDesktopDropdownToggle}
-                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-none flex items-center"
-                    onMouseEnter={(e) => {
-                      // Get the dropdown content
-                      const dropdownId = e.currentTarget.getAttribute('data-dropdown-id');
-                      const dropdown = document.getElementById(`desktop-dropdown-${dropdownId}`);
-                      
-                      if (!dropdown) return;
-                      
-                      // Close all other dropdowns first
-                      const allDropdowns = document.querySelectorAll('.desktop-dropdown');
-                      allDropdowns.forEach((el) => {
-                        if (el.id !== `desktop-dropdown-${dropdownId}`) {
-                          el.classList.add('hidden');
-                          
-                          // Reset all other dropdown buttons
-                          const buttonId = el.id.replace('desktop-dropdown-', '');
-                          const otherButton = document.querySelector(`[data-dropdown-id="${buttonId}"]`);
-                          if (otherButton) {
-                            const arrow = otherButton.querySelector('svg');
-                            if (arrow) arrow.classList.remove('transform', 'rotate-180');
-                          }
-                        }
-                      });
-                      
-                      // Show this dropdown
-                      dropdown.classList.remove('hidden');
-                      
-                      // Rotate the arrow
-                      const arrow = e.currentTarget.querySelector('svg');
-                      if (arrow) arrow.classList.add('transform', 'rotate-180');
-                    }}
+          {/* Desktop navigation */}
+          <div className="hidden md:flex md:items-center md:space-x-1">
+            {mainMenuCategories.map((category, idx) => (
+              <div key={idx} className="relative group">
+                <button
+                  aria-expanded={activeCategory === idx}
+                  aria-controls={`desktop-dropdown-${idx}`}
+                  onClick={() => setActiveCategory(activeCategory === idx ? null : idx)}
+                  onMouseEnter={() => handleCategoryHover(idx)}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center ${
+                    activeCategory === idx 
+                      ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-gray-700' 
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {category.name}
+                  <svg 
+                    className={`w-4 h-4 ml-1 transition-transform duration-200 ${activeCategory === idx ? 'transform rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24" 
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    {category.name}
-                    <svg 
-                      className="w-4 h-4 ml-1 transition-transform duration-200" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24" 
-                      xmlns="http://www.w3.org/2000/svg"
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {/* Dropdown menu with animation */}
+                <AnimatePresence>
+                  {activeCategory === idx && (
+                    <motion.div
+                      id={`desktop-dropdown-${idx}`}
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute left-0 mt-2 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50"
+                      style={{ width: '320px', maxHeight: '500px', overflowY: 'auto' }}
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {/* Dropdown menu */}
-                  <div 
-                    id={`desktop-dropdown-${idx}`}
-                    className="desktop-dropdown hidden absolute left-0 mt-2 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50"
-                    style={{ width: '300px', maxHeight: '400px', overflowY: 'auto' }}
-                    onMouseLeave={() => {
-                      // Add a small delay before hiding to prevent accidental hiding
-                      setTimeout(() => {
-                        const dropdown = document.getElementById(`desktop-dropdown-${idx}`);
-                        if (dropdown && !dropdown.matches(':hover')) {
-                          dropdown.classList.add('hidden');
-                          
-                          // Reset the arrow
-                          const button = document.querySelector(`[data-dropdown-id="${idx}"]`);
-                          if (button) {
-                            const arrow = button.querySelector('svg');
-                            if (arrow) arrow.classList.remove('transform', 'rotate-180');
-                          }
-                        }
-                      }, 100);
-                    }}
-                  >
-                    <div className="py-2 px-3">
-                      {/* Main category header */}
-                      <div className="bg-blue-600 text-white p-2 font-medium rounded-t-md -mt-2 -mx-3 mb-2">
-                        {category.name} Calculators
-                      </div>
-                      
-                      {/* Popular calculators */}
-                      <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 px-2">
-                        Popular {category.name}
-                      </h3>
-                      
-                      <div className="mb-2">
-                        {category.categories[0]?.items.slice(0, 5).map((item, itemIdx) => (
-                          <Link
-                            key={itemIdx}
-                            href={item.url}
-                            className="block px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-md"
-                            onClick={closeAllDesktopDropdowns}
-                          >
-                            {item.name}
-            </Link>
-                        ))}
-                      </div>
-                      
-                      {/* Categories */}
-                      <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
+                      <div className="py-2 px-3">
+                        {/* Main category header */}
+                        <div className="bg-blue-600 text-white p-2 font-medium rounded-t-md -mt-2 -mx-3 mb-2">
+                          {category.name} Calculators
+                        </div>
+                        
+                        {/* Popular calculators */}
                         <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 px-2">
-                          Categories
+                          Popular {category.name}
                         </h3>
                         
-                        <div className="grid grid-cols-2 gap-1">
-                          {category.categories.map((section, idx) => (
+                        <div className="mb-2">
+                          {category.categories[0]?.items.slice(0, 5).map((item, itemIdx) => (
                             <Link
-                              key={idx}
-                              href={`${category.url}#${section.heading.toLowerCase().replace(/\s+/g, '-')}`}
-                              className="px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-md"
-                              onClick={closeAllDesktopDropdowns}
+                              key={itemIdx}
+                              href={item.url}
+                              className="block px-2 py-1.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 rounded-md transition-colors duration-150"
                             >
-                              {section.heading}
-            </Link>
+                              {item.name}
+                            </Link>
                           ))}
                         </div>
+                        
+                        {/* Categories */}
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
+                          <h3 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-1 px-2">
+                            Categories
+                          </h3>
+                          
+                          <div className="grid grid-cols-2 gap-1">
+                            {category.categories.map((section, idx) => (
+                              <Link
+                                key={idx}
+                                href={`${category.url}#${section.heading.toLowerCase().replace(/\s+/g, '-')}`}
+                                className="px-2 py-1.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 rounded-md transition-colors duration-150"
+                              >
+                                {section.heading}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* View all link */}
+                        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-center">
+                          <Link
+                            href={category.url}
+                            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 rounded-md transition-colors duration-150"
+                          >
+                            View All {category.name}
+                            <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                          </Link>
+                        </div>
                       </div>
-                      
-                      {/* View all link */}
-                      <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-center">
-                        <Link
-                          href={category.url}
-                          className="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 rounded-md"
-                          onClick={closeAllDesktopDropdowns}
-                        >
-                          View All {category.name}
-                          <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                          </svg>
-            </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
           </div>
           
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             <button
-                onClick={toggleMobileMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              onClick={toggleMobileMenu}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
             >
-                <span className="sr-only">{mobileMenuOpen ? 'Close main menu' : 'Open main menu'}</span>
-                {mobileMenuOpen ? (
+              <span className="sr-only">{mobileMenuOpen ? 'Close main menu' : 'Open main menu'}</span>
+              {mobileMenuOpen ? (
                 <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
                 <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
             </button>
           </div>
         </div>
       </div>
-      </nav>
-      
-      {/* COMPLETELY REDESIGNED Mobile menu using vanilla JS for toggling */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 bg-white dark:bg-gray-800 shadow-lg z-40 border-t border-gray-200 dark:border-gray-700 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
-          <div className="p-2 space-y-2">
-            {mainMenuCategories.map((category, categoryIndex) => (
-              <div key={categoryIndex} className="border border-gray-200 dark:border-gray-700 rounded overflow-hidden">
-                {/* Category header button - using vanilla JS for toggle */}
-                <button 
-                  type="button"
-                  className="mobile-dropdown-button w-full flex items-center justify-between p-2 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white text-left font-medium"
-                  onClick={handleMobileAccordionToggle}
-                >
-                  <span>{category.name}</span>
-                  <svg 
-                    className="w-5 h-5 transition-transform duration-200" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
+
+      {/* Mobile menu with animation */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            id="mobile-menu"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-white dark:bg-gray-800 overflow-hidden"
+          >
+            <div className="px-2 pt-2 pb-3 space-y-1 max-h-[80vh] overflow-y-auto">
+              {mainMenuCategories.map((category, idx) => (
+                <div key={idx} className="rounded-md overflow-hidden">
+                  {/* Category button */}
+                  <button
+                    onClick={() => toggleMobileCategory(idx)}
+                    aria-expanded={activeMobileCategory === idx}
+                    aria-controls={`mobile-dropdown-${idx}`}
+                    className={`w-full flex justify-between items-center px-3 py-2 text-base font-medium rounded-md transition-colors duration-200 ${
+                      activeMobileCategory === idx
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    }`}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {/* Category content - hidden by default */}
-                <div className="mobile-dropdown-content hidden">
-                  {/* Main category header */}
-                  <div className="bg-blue-600 text-white p-2 font-medium">
-                    {category.name} Calculators
-                  </div>
-                  
-                  {/* All calculators in this category */}
-                  {category.categories.map((section, sectionIdx) => (
-                    <div key={sectionIdx}>
-                      {/* Section header (if not the first section) */}
-                      {sectionIdx > 0 && (
-                        <div className="bg-blue-500 text-white p-2 font-medium border-t border-blue-700">
-                          {section.heading}
+                    <span>{category.name}</span>
+                    <svg 
+                      className={`w-5 h-5 transition-transform duration-200 ${activeMobileCategory === idx ? 'transform rotate-180' : ''}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24" 
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Category content with animation */}
+                  <AnimatePresence>
+                    {activeMobileCategory === idx && (
+                      <motion.div
+                        id={`mobile-dropdown-${idx}`}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        {/* Main category header */}
+                        <div className="bg-blue-600 text-white p-2 font-medium">
+                          {category.name} Calculators
                         </div>
-                      )}
-                      
-                      {/* Section items */}
-                      <div className="grid grid-cols-2">
-                        {section.items.map((item, itemIdx) => (
-                          <a
-                            key={`${sectionIdx}-${itemIdx}`}
-                            href={item.url}
-                            className="p-2 text-sm text-blue-600 hover:bg-gray-50 dark:text-blue-400 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {item.name}
-                          </a>
+
+                        {/* All calculators in this category */}
+                        {category.categories.map((section, sectionIdx) => (
+                          <div key={sectionIdx}>
+                            {/* Section header */}
+                            <div className={`${sectionIdx > 0 ? 'bg-blue-500 text-white p-2 font-medium border-t border-blue-700' : 'hidden'}`}>
+                              {section.heading}
+                            </div>
+
+                            {/* Section items */}
+                            <div className="grid grid-cols-2 gap-1 p-1">
+                              {section.items.map((item, itemIdx) => (
+                                <Link
+                                  key={`${sectionIdx}-${itemIdx}`}
+                                  href={item.url}
+                                  className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-gray-700 rounded-md transition-colors duration-150"
+                                >
+                                  {item.name}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
                         ))}
-                      </div>
-                    </div>
-                  ))}
+                        
+                        {/* View all link */}
+                        <div className="p-2 border-t border-gray-200 dark:border-gray-700">
+                          <Link
+                            href={category.url}
+                            className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 rounded-md transition-colors duration-150"
+                          >
+                            View All {category.name}
+                            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                          </Link>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
   );
 }

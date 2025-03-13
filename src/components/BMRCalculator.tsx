@@ -5,7 +5,7 @@ import { Calculator } from '@/data/calculators';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
@@ -407,9 +407,9 @@ const BMRCalculator: React.FC<BMRCalculatorProps> = ({ calculator }) => {
           
           {/* Formula Info - Only visible on desktop */}
           <div className="hidden md:block">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">About the Formulas</h3>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Mifflin-St Jeor:</strong> Most accurate for the general population</li>
                 <li><strong>Harris-Benedict:</strong> Classic formula, slightly overestimates</li>
                 <li><strong>Katch-McArdle:</strong> Best for lean, athletic individuals (requires body fat %)</li>
@@ -424,10 +424,10 @@ const BMRCalculator: React.FC<BMRCalculatorProps> = ({ calculator }) => {
           
           {/* BMR Result */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Basal Metabolic Rate (BMR)
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {formatNumber(bmr)} calories/day
             </div>
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
@@ -437,10 +437,10 @@ const BMRCalculator: React.FC<BMRCalculatorProps> = ({ calculator }) => {
           
           {/* TDEE Result */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Total Daily Energy Expenditure (TDEE)
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {formatNumber(tdee)} calories/day
             </div>
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
@@ -458,19 +458,19 @@ const BMRCalculator: React.FC<BMRCalculatorProps> = ({ calculator }) => {
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Calorie Targets for Weight Goals</h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Weight Loss (0.5kg/week):</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Weight Loss (0.5kg/week):</span>
                 <span className="font-medium text-red-600 dark:text-red-400">{formatNumber(tdee - 500)} calories/day</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Weight Loss (1kg/week):</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Weight Loss (1kg/week):</span>
                 <span className="font-medium text-red-600 dark:text-red-400">{formatNumber(tdee - 1000)} calories/day</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Maintenance:</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Maintenance:</span>
                 <span className="font-medium text-gray-900 dark:text-white dark:text-blue-400">{formatNumber(tdee)} calories/day</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Weight Gain (0.5kg/week):</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Weight Gain (0.5kg/week):</span>
                 <span className="font-medium text-green-600 dark:text-green-400">{formatNumber(tdee + 500)} calories/day</span>
               </div>
             </div>
@@ -481,9 +481,9 @@ const BMRCalculator: React.FC<BMRCalculatorProps> = ({ calculator }) => {
           
           {/* Formula Info - Only visible on mobile */}
           <div className="block md:hidden">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">About the Formulas</h3>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Mifflin-St Jeor:</strong> Most accurate for the general population</li>
                 <li><strong>Harris-Benedict:</strong> Classic formula, slightly overestimates</li>
                 <li><strong>Katch-McArdle:</strong> Best for lean, athletic individuals (requires body fat %)</li>

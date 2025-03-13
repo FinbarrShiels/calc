@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Calculator } from '@/data/calculators';
-import { Chart } from 'chart.js/auto';
+import { Chart, ChartConfiguration } from 'chart.js/auto';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
 
 interface SavingsGoalsCalculatorProps {
   calculator?: Calculator;
@@ -16,19 +15,19 @@ interface CurrencyOption {
   symbol: string;
 }
 
-interface YearlyData {
-  year: number;
-  contribution: number;
+interface GoalData {
+  month: number;
+  deposit: number;
   interest: number;
   balance: number;
-  totalContributions: number;
+  totalDeposits: number;
   totalInterest: number;
+  percentComplete: number;
 }
 
-type CompoundingFrequency = 'monthly' | 'quarterly' | 'annually';
-type CalculationType = 'timeToReachGoal' | 'contributionToReachGoal';
 type ChartType = 'line' | 'bar';
 type ViewType = 'chart' | 'table';
+type CompoundFrequency = 'daily' | 'monthly' | 'quarterly' | 'annually';
 
 const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calculator }) => {
   // Currency options
@@ -42,67 +41,70 @@ const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calcula
   
   // Input state
   const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
-  const [currentSavings, setCurrentSavings] = useState<number>(5000);
-  const [savingsGoal, setSavingsGoal] = useState<number>(25000);
+  const [initialSavings, setInitialSavings] = useState<number>(1000);
   const [monthlyContribution, setMonthlyContribution] = useState<number>(500);
-  const [annualInterestRate, setAnnualInterestRate] = useState<number>(3);
-  const [compoundingFrequency, setCompoundingFrequency] = useState<CompoundingFrequency>('monthly');
-  const [calculationType, setCalculationType] = useState<CalculationType>('timeToReachGoal');
-  const [targetDate, setTargetDate] = useState<number>(5);
+  const [annualInterestRate, setAnnualInterestRate] = useState<number>(5);
+  const [targetAmount, setTargetAmount] = useState<number>(10000);
+  const [compoundFrequency, setCompoundFrequency] = useState<CompoundFrequency>('monthly');
   
   // Result state
   const [timeToReachGoal, setTimeToReachGoal] = useState<number>(0);
-  const [requiredContribution, setRequiredContribution] = useState<number>(0);
-  const [finalBalance, setFinalBalance] = useState<number>(0);
-  const [totalContributions, setTotalContributions] = useState<number>(0);
+  const [totalDeposits, setTotalDeposits] = useState<number>(0);
   const [totalInterest, setTotalInterest] = useState<number>(0);
-  const [yearlyData, setYearlyData] = useState<YearlyData[]>([]);
+  const [goalData, setGoalData] = useState<GoalData[]>([]);
+  const [isGoalReached, setIsGoalReached] = useState<boolean>(false);
   
   // View state
   const [viewType, setViewType] = useState<ViewType>('chart');
   const [chartType, setChartType] = useState<ChartType>('line');
   
   // Chart refs
-  const growthChartRef = useRef<HTMLCanvasElement>(null);
-  const growthChartInstance = useRef<Chart | null>(null);
+  const progressChartRef = useRef<HTMLCanvasElement>(null);
+  const progressChartInstance = useRef<Chart | null>(null);
   const breakdownChartRef = useRef<HTMLCanvasElement>(null);
   const breakdownChartInstance = useRef<Chart | null>(null);
   
-  // Calculate savings goals
-  useEffect(() => {
-    calculateSavingsGoal();
-  }, [
-    currentSavings,
-    savingsGoal,
-    monthlyContribution,
-    annualInterestRate,
-    compoundingFrequency,
-    calculationType,
-    targetDate
-  ]);
+  // Get currency symbol
+  const getCurrencySymbol = (): string => {
+    const currency = currencyOptions.find(c => c.value === selectedCurrency);
+    return currency ? currency.symbol : '$';
+  };
   
-  // Update charts when data changes
+  // Handle currency change
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCurrency(e.target.value);
+  };
+  
+  // Handle compound frequency change
+  const handleCompoundFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCompoundFrequency(e.target.value as CompoundFrequency);
+  };
+  
+  // Calculate goal progress
   useEffect(() => {
-    if (yearlyData.length > 0) {
-      createGrowthChart();
+    calculateGoalProgress();
+  }, [initialSavings, monthlyContribution, annualInterestRate, targetAmount, compoundFrequency]);
+  
+  // Update charts when results change
+  useEffect(() => {
+    createProgressChart();
       createBreakdownChart();
-    }
     
     return () => {
-      if (growthChartInstance.current) {
-        growthChartInstance.current.destroy();
+      if (progressChartInstance.current) {
+        progressChartInstance.current.destroy();
       }
       if (breakdownChartInstance.current) {
         breakdownChartInstance.current.destroy();
       }
     };
-  }, [yearlyData, chartType, selectedCurrency]);
+  }, [goalData, selectedCurrency, chartType]);
   
   // Handle window resize for chart responsiveness
   useEffect(() => {
     const handleResize = () => {
-      if (growthChartInstance.current) {
-        growthChartInstance.current.resize();
+      if (progressChartInstance.current) {
+        progressChartInstance.current.resize();
       }
       if (breakdownChartInstance.current) {
         breakdownChartInstance.current.resize();
@@ -116,179 +118,104 @@ const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calcula
     };
   }, []);
   
-  // Get currency symbol
-  const getCurrencySymbol = (): string => {
-    const currency = currencyOptions.find(c => c.value === selectedCurrency);
-    return currency ? currency.symbol : '$';
-  };
-  
-  // Handle currency change
-  const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCurrency(e.target.value);
-  };
-  
-  // Handle compounding frequency change
-  const handleCompoundingFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCompoundingFrequency(e.target.value as CompoundingFrequency);
-  };
-  
-  // Handle calculation type change
-  const handleCalculationTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCalculationType(e.target.value as CalculationType);
-  };
-  
-  // Calculate savings goal
-  const calculateSavingsGoal = () => {
-    // Get compounding periods per year
-    let periodsPerYear = 12; // monthly
-    if (compoundingFrequency === 'quarterly') periodsPerYear = 4;
-    if (compoundingFrequency === 'annually') periodsPerYear = 1;
-    
-    // Calculate periodic interest rate
-    const periodicRate = annualInterestRate / 100 / periodsPerYear;
-    
-    // Calculate based on calculation type
-    if (calculationType === 'timeToReachGoal') {
-      // Calculate time to reach goal
-      let balance = currentSavings;
-      let years = 0;
-      let months = 0;
-      let totalContrib = 0;
-      let totalInt = 0;
-      const yearlyDataArray: YearlyData[] = [];
-      let yearlyContribution = 0;
-      let yearlyInterest = 0;
-      
-      while (balance < savingsGoal && months < 600) { // Cap at 50 years
-        months++;
-        
-        // Add monthly contribution
-        balance += monthlyContribution;
-        totalContrib += monthlyContribution;
-        yearlyContribution += monthlyContribution;
-        
-        // Add interest (only on compounding periods)
-        if (months % (12 / periodsPerYear) === 0) {
-          const interest = balance * periodicRate;
-          balance += interest;
-          totalInt += interest;
-          yearlyInterest += interest;
-        }
-        
-        // Record yearly data
-        if (months % 12 === 0) {
-          years++;
-          yearlyDataArray.push({
-            year: years,
-            contribution: yearlyContribution,
-            interest: yearlyInterest,
-            balance: balance,
-            totalContributions: totalContrib,
-            totalInterest: totalInt
-          });
-          yearlyContribution = 0;
-          yearlyInterest = 0;
-        }
-      }
-      
-      // Update state
-      setTimeToReachGoal(months / 12);
-      setFinalBalance(balance);
-      setTotalContributions(totalContrib);
-      setTotalInterest(totalInt);
-      setYearlyData(yearlyDataArray);
-      
-    } else {
-      // Calculate required contribution to reach goal in target date
-      const totalMonths = targetDate * 12;
-      
-      // Use financial formula to solve for PMT (payment)
-      // FV = P(1+r)^n + PMT*((1+r)^n - 1)/r
-      // Solve for PMT: PMT = (FV - P(1+r)^n) * r / ((1+r)^n - 1)
-      
-      // For simplicity, we'll use an iterative approach
-      let estimatedContribution = (savingsGoal - currentSavings) / totalMonths;
-      let balance = currentSavings;
-      let totalContrib = 0;
-      let totalInt = 0;
-      const yearlyDataArray: YearlyData[] = [];
-      let yearlyContribution = 0;
-      let yearlyInterest = 0;
-      
-      // Adjust contribution until we get close to the goal
-      for (let i = 0; i < 10; i++) { // Max 10 iterations for refinement
-        balance = currentSavings;
-        totalContrib = 0;
-        totalInt = 0;
-        yearlyDataArray.length = 0;
-        yearlyContribution = 0;
-        yearlyInterest = 0;
-        
-        for (let month = 1; month <= totalMonths; month++) {
-          // Add monthly contribution
-          balance += estimatedContribution;
-          totalContrib += estimatedContribution;
-          yearlyContribution += estimatedContribution;
-          
-          // Add interest (only on compounding periods)
-          if (month % (12 / periodsPerYear) === 0) {
-            const interest = balance * periodicRate;
-            balance += interest;
-            totalInt += interest;
-            yearlyInterest += interest;
-          }
-          
-          // Record yearly data
-          if (month % 12 === 0) {
-            const year = month / 12;
-            yearlyDataArray.push({
-              year: year,
-              contribution: yearlyContribution,
-              interest: yearlyInterest,
-              balance: balance,
-              totalContributions: totalContrib,
-              totalInterest: totalInt
-            });
-            yearlyContribution = 0;
-            yearlyInterest = 0;
-          }
-        }
-        
-        // Adjust contribution based on final balance
-        const diff = savingsGoal - balance;
-        if (Math.abs(diff) < 10) break; // Close enough
-        
-        estimatedContribution += diff / totalMonths;
-      }
-      
-      // Update state
-      setRequiredContribution(estimatedContribution);
-      setFinalBalance(balance);
-      setTotalContributions(totalContrib);
-      setTotalInterest(totalInt);
-      setYearlyData(yearlyDataArray);
+  // Get number of compounds per year based on frequency
+  const getCompoundsPerYear = (): number => {
+    switch (compoundFrequency) {
+      case 'daily': return 365;
+      case 'monthly': return 12;
+      case 'quarterly': return 4;
+      case 'annually': return 1;
+      default: return 12;
     }
   };
   
-  // Create growth chart
-  const createGrowthChart = () => {
-    if (!growthChartRef.current) return;
+  // Calculate goal progress
+  const calculateGoalProgress = () => {
+    if (targetAmount <= initialSavings) {
+      setTimeToReachGoal(0);
+      setTotalDeposits(initialSavings);
+      setTotalInterest(0);
+      setGoalData([]);
+      setIsGoalReached(true);
+      return;
+    }
     
-    const ctx = growthChartRef.current.getContext('2d');
+    const compoundsPerYear = getCompoundsPerYear();
+    const monthlyRate = (annualInterestRate / 100) / compoundsPerYear;
+    const compoundsPerMonth = compoundsPerYear / 12;
+    
+    let balance = initialSavings;
+    let totalDeposit = initialSavings;
+    let totalInterestEarned = 0;
+    let month = 0;
+    let goalReached = false;
+    
+    const data: GoalData[] = [];
+    
+    // Maximum 50 years (600 months) to prevent infinite loops
+    const maxMonths = 600;
+    
+    while (balance < targetAmount && month < maxMonths) {
+      month++;
+      const monthlyDeposit = monthlyContribution;
+      let interestForMonth = 0;
+      
+      // Apply compound interest for this month
+      for (let i = 0; i < compoundsPerMonth; i++) {
+        const interest = balance * monthlyRate;
+          balance += interest;
+        interestForMonth += interest;
+      }
+      
+      // Add monthly contribution at the end of the month
+      balance += monthlyDeposit;
+      totalDeposit += monthlyDeposit;
+      totalInterestEarned += interestForMonth;
+      
+      const percentComplete = Math.min(100, (balance / targetAmount) * 100);
+      
+      // Store data for this month
+      data.push({
+        month,
+        deposit: monthlyDeposit,
+        interest: interestForMonth,
+        balance,
+        totalDeposits: totalDeposit,
+        totalInterest: totalInterestEarned,
+        percentComplete
+      });
+      
+      if (balance >= targetAmount) {
+        goalReached = true;
+        break;
+      }
+    }
+    
+    setTimeToReachGoal(month);
+    setTotalDeposits(totalDeposit);
+    setTotalInterest(totalInterestEarned);
+    setGoalData(data);
+    setIsGoalReached(goalReached);
+  };
+  
+  // Create progress chart
+  const createProgressChart = () => {
+    if (!progressChartRef.current) return;
+    
+    const ctx = progressChartRef.current.getContext('2d');
     if (!ctx) return;
     
-    if (growthChartInstance.current) {
-      growthChartInstance.current.destroy();
+    if (progressChartInstance.current) {
+      progressChartInstance.current.destroy();
     }
     
-    const labels = yearlyData.map(data => `Year ${data.year}`);
-    const balanceData = yearlyData.map(data => data.balance);
-    const contributionsData = yearlyData.map(data => data.totalContributions);
-    const interestData = yearlyData.map(data => data.totalInterest);
+    const labels = goalData.map(data => `Month ${data.month}`);
+    const balanceData = goalData.map(data => data.balance);
+    const targetLine = goalData.map(() => targetAmount);
     
     const currencySymbol = getCurrencySymbol();
     
-    growthChartInstance.current = new Chart(ctx, {
+    progressChartInstance.current = new Chart(ctx, {
       type: chartType,
       data: {
         labels,
@@ -296,68 +223,72 @@ const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calcula
           {
             label: 'Balance',
             data: balanceData,
-            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
             borderColor: '#3b82f6', // blue-500
-            borderWidth: 2,
+            borderWidth: 1,
+            fill: chartType === 'line',
             tension: 0.1
           },
           {
-            label: 'Contributions',
-            data: contributionsData,
-            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-            borderColor: '#10b981', // emerald-500
+            label: 'Target',
+            data: targetLine,
+            backgroundColor: 'rgba(239, 68, 68, 0.2)', // red-500 with opacity
+            borderColor: 'rgba(239, 68, 68, 0.7)', // red-500 with opacity
             borderWidth: 2,
-            tension: 0.1
-          },
-          {
-            label: 'Interest',
-            data: interestData,
-            backgroundColor: 'rgba(249, 115, 22, 0.2)',
-            borderColor: '#f97316', // orange-500
-            borderWidth: 2,
-            tension: 0.1
+            borderDash: [5, 5],
+            fill: false,
+            pointRadius: 0,
+            type: 'line'
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
-            },
-            ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
-              callback: function(value) {
-                return currencySymbol + value.toLocaleString();
-              }
-            }
-          },
-          x: {
-            grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
-            },
-            ticks: {
-              color: 'rgba(255, 255, 255, 0.7)'
-            }
-          }
-        },
         plugins: {
           legend: {
             position: 'top',
             labels: {
-              color: 'rgba(255, 255, 255, 0.7)',
-              boxWidth: 12,
-              padding: 10
+              color: '#e5e7eb', // text-gray-200
+              font: {
+                size: 12
+              }
             }
           },
           tooltip: {
+            backgroundColor: 'rgba(17, 24, 39, 0.9)', // bg-gray-900 with opacity
+            titleColor: '#f9fafb', // text-gray-50
+            bodyColor: '#f3f4f6', // text-gray-100
+            padding: 10,
+            borderColor: 'rgba(75, 85, 99, 0.3)', // gray-600 with opacity
+            borderWidth: 1,
             callbacks: {
               label: function(context) {
-                const value = context.raw as number;
-                return `${context.dataset.label}: ${currencySymbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                const rawValue = context.raw as number;
+                const label = context.dataset.label || '';
+                return `${label}: ${currencySymbol}${rawValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+              callback: function(value) {
+                return currencySymbol + value.toLocaleString();
               }
             }
           }
@@ -368,7 +299,7 @@ const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calcula
   
   // Create breakdown chart
   const createBreakdownChart = () => {
-    if (!breakdownChartRef.current || yearlyData.length === 0) return;
+    if (!breakdownChartRef.current || goalData.length === 0) return;
     
     const ctx = breakdownChartRef.current.getContext('2d');
     if (!ctx) return;
@@ -377,25 +308,26 @@ const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calcula
       breakdownChartInstance.current.destroy();
     }
     
-    const currencySymbol = getCurrencySymbol();
+    const lastData = goalData[goalData.length - 1];
     
-    // Get final values
-    const finalData = yearlyData[yearlyData.length - 1];
+    const currencySymbol = getCurrencySymbol();
     
     breakdownChartInstance.current = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Contributions', 'Interest'],
+        labels: ['Initial Savings', 'Contributions', 'Interest'],
         datasets: [
           {
-            data: [finalData.totalContributions, finalData.totalInterest],
+            data: [initialSavings, lastData.totalDeposits - initialSavings, lastData.totalInterest],
             backgroundColor: [
-              '#10b981', // emerald-500
-              '#f97316', // orange-500
+              'rgba(16, 185, 129, 0.7)', // green-500 with opacity
+              'rgba(59, 130, 246, 0.7)', // blue-500 with opacity
+              'rgba(245, 158, 11, 0.7)', // yellow-500 with opacity
             ],
             borderColor: [
-              '#065f46', // emerald-800
-              '#9a3412', // orange-800
+              '#10b981', // green-500
+              '#3b82f6', // blue-500
+              '#f59e0b', // yellow-500
             ],
             borderWidth: 1
           }
@@ -406,19 +338,28 @@ const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calcula
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'top',
+            position: 'bottom',
             labels: {
-              color: 'rgba(255, 255, 255, 0.7)',
-              boxWidth: 12,
-              padding: 10
+              color: '#e5e7eb', // text-gray-200
+              font: {
+                size: 12
+              }
             }
           },
           tooltip: {
+            backgroundColor: 'rgba(17, 24, 39, 0.9)', // bg-gray-900 with opacity
+            titleColor: '#f9fafb', // text-gray-50
+            bodyColor: '#f3f4f6', // text-gray-100
+            padding: 10,
+            borderColor: 'rgba(75, 85, 99, 0.3)', // gray-600 with opacity
+            borderWidth: 1,
             callbacks: {
               label: function(context) {
-                const value = context.raw as number;
-                const percentage = (value / finalData.balance * 100).toFixed(1);
-                return `${context.label}: ${currencySymbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${percentage}%)`;
+                const dataValue = context.raw as number;
+                const label = context.label || '';
+                const total = lastData.balance;
+                const percentage = Math.round((dataValue / total) * 100);
+                return `${label}: ${currencySymbol}${dataValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${percentage}%)`;
               }
             }
           }
@@ -429,29 +370,45 @@ const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calcula
   
   // Format currency
   const formatCurrency = (value: number): string => {
-    const symbol = getCurrencySymbol();
-    return `${symbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return getCurrencySymbol() + value.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  };
+  
+  // Format time
+  const formatTime = (months: number): string => {
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    
+    if (years === 0) {
+      return `${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`;
+    } else if (remainingMonths === 0) {
+      return `${years} year${years !== 1 ? 's' : ''}`;
+    } else {
+      return `${years} year${years !== 1 ? 's' : ''} and ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`;
+    }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
-      <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 p-6">
-        {/* Left Box - Inputs */}
-        <div className="calculator-card-alt p-4 sm:p-6 rounded-lg shadow-lg">
-          <h2 className={calculatorSectionHeaderClasses}>Savings Goals Calculator</h2>
+    <div className="bg-gray-800 text-white rounded-lg shadow-xl p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Input Section */}
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <h2 className="text-xl font-bold text-white mb-4">Savings Goal Calculator</h2>
           
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="currency" className="block text-sm font-medium text-gray-300 mb-1">
                 Currency
               </label>
               <select
                 id="currency"
-                className={inputClasses}
                 value={selectedCurrency}
                 onChange={handleCurrencyChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {currencyOptions.map((option) => (
+                {currencyOptions.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -460,84 +417,61 @@ const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calcula
             </div>
             
             <div>
-              <label htmlFor="calculationType" className="block text-sm font-medium text-gray-300 mb-1">
-                Calculation Type
-              </label>
-              <select
-                id="calculationType"
-                className={inputClasses}
-                value={calculationType}
-                onChange={handleCalculationTypeChange}
-              >
-                <option value="timeToReachGoal">Time to Reach Goal</option>
-                <option value="contributionToReachGoal">Contribution to Reach Goal</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="currentSavings" className="block text-sm font-medium text-gray-300 mb-1">
-                Current Savings
+              <label htmlFor="targetAmount" className="block text-sm font-medium text-gray-300 mb-1">
+                Target Amount
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">{getCurrencySymbol()}</span>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
+                </div>
                 <input
+                  id="targetAmount"
                   type="tel"
-                  id="currentSavings"
-                  className={inputClasses}
-                  value={currentSavings} {...numericInputProps}
-                  onChange={(e) => setCurrentSavings(Number(e.target.value))}
+                  value={targetAmount} {...numericInputProps}
+                  onChange={(e) => setTargetAmount(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
             
             <div>
-              <label htmlFor="savingsGoal" className="block text-sm font-medium text-gray-300 mb-1">
-                Savings Goal
+              <label htmlFor="initialSavings" className="block text-sm font-medium text-gray-300 mb-1">
+                Initial Savings
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">{getCurrencySymbol()}</span>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
+                </div>
                 <input
+                  id="initialSavings"
                   type="tel"
-                  id="savingsGoal"
-                  className={inputClasses}
-                  value={savingsGoal} {...numericInputProps}
-                  onChange={(e) => setSavingsGoal(Number(e.target.value))}
+                  value={initialSavings} {...numericInputProps}
+                  onChange={(e) => setInitialSavings(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
             
-            {calculationType === 'timeToReachGoal' ? (
               <div>
                 <label htmlFor="monthlyContribution" className="block text-sm font-medium text-gray-300 mb-1">
                   Monthly Contribution
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">{getCurrencySymbol()}</span>
-                  <input
-                    type="tel"
-                    id="monthlyContribution"
-                    className={inputClasses}
-                    value={monthlyContribution} {...numericInputProps}
-                    onChange={(e) => setMonthlyContribution(Number(e.target.value))}
-                  />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
                 </div>
-              </div>
-            ) : (
-              <div>
-                <label htmlFor="targetDate" className="block text-sm font-medium text-gray-300 mb-1">
-                  Target Date (Years)
-                </label>
                 <input
+                  id="monthlyContribution"
                   type="tel"
-                  id="targetDate"
-                  className={inputClasses}
-                  value={targetDate} {...numericInputProps}
-                  onChange={(e) => setTargetDate(Number(e.target.value))}
-                  min="1"
-                  max="50"
+                  value={monthlyContribution} {...numericInputProps}
+                  onChange={(e) => setMonthlyContribution(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-            )}
+            </div>
             
             <div>
               <label htmlFor="annualInterestRate" className="block text-sm font-medium text-gray-300 mb-1">
@@ -545,181 +479,177 @@ const SavingsGoalsCalculator: React.FC<SavingsGoalsCalculatorProps> = ({ calcula
               </label>
               <div className="relative">
                 <input
-                  type="tel"
                   id="annualInterestRate"
-                  className={inputClasses}
+                  type="tel"
                   value={annualInterestRate} {...numericInputProps}
                   onChange={(e) => setAnnualInterestRate(Number(e.target.value))}
+                  min="0"
+                  max="100"
                   step="0.1"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">%</span>
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">%</span>
+                </div>
               </div>
             </div>
             
             <div>
-              <label htmlFor="compoundingFrequency" className="block text-sm font-medium text-gray-300 mb-1">
-                Compounding Frequency
+              <label htmlFor="compoundFrequency" className="block text-sm font-medium text-gray-300 mb-1">
+                Compound Frequency
               </label>
               <select
-                id="compoundingFrequency"
-                className={inputClasses}
-                value={compoundingFrequency}
-                onChange={handleCompoundingFrequencyChange}
+                id="compoundFrequency"
+                value={compoundFrequency}
+                onChange={handleCompoundFrequencyChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
+                <option value="daily">Daily</option>
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly</option>
                 <option value="annually">Annually</option>
               </select>
             </div>
           </div>
-        </div>
-        
-        {/* Right Box - Results */}
-        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
-          <h2 className={calculatorSectionHeaderClasses}>Results</h2>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 sm:mb-8">
-            {calculationType === 'timeToReachGoal' ? (
-              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                <div className={resultLabelClasses}>Time to Reach Goal</div>
-                <div className="text-xl sm:text-2xl font-bold text-blue-400">
-                  {timeToReachGoal.toFixed(1)} years
+          <div className="mt-6 bg-gray-800 p-4 rounded-md border border-gray-700">
+            <h3 className="text-lg font-medium mb-3 text-blue-400">Goal Summary</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-400 text-sm">Time to Reach Goal</p>
+                <p className="text-xl font-semibold text-white">
+                  {isGoalReached ? formatTime(timeToReachGoal) : 'Goal not reachable'}
+                </p>
                 </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  {Math.floor(timeToReachGoal)} years, {Math.round((timeToReachGoal % 1) * 12)} months
-                </div>
+              <div>
+                <p className="text-gray-400 text-sm">Final Balance</p>
+                <p className="text-xl font-semibold text-white">
+                  {isGoalReached && goalData.length > 0 ? formatCurrency(goalData[goalData.length - 1].balance) : '-'}
+                </p>
               </div>
-            ) : (
-              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                <div className={resultLabelClasses}>Required Monthly Contribution</div>
-                <div className="text-xl sm:text-2xl font-bold text-blue-400">
-                  {formatCurrency(requiredContribution)}
+              <div>
+                <p className="text-gray-400 text-sm">Total Contributions</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(totalDeposits)}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Total Interest Earned</p>
+                <p className="text-xl font-semibold text-green-400">{formatCurrency(totalInterest)}</p>
+              </div>
+            </div>
+            
+            {goalData.length > 0 && (
+              <div className="mt-4">
+                <div className="w-full bg-gray-700 rounded-full h-4 mb-2">
+                  <div 
+                    className="bg-blue-600 h-4 rounded-full" 
+                    style={{ width: `${Math.min(100, (goalData[goalData.length - 1].balance / targetAmount) * 100)}%` }}
+                  ></div>
                 </div>
+                <p className="text-sm text-gray-300 text-right">
+                  {Math.min(100, Math.round((goalData[goalData.length - 1].balance / targetAmount) * 100))}% of goal
+                </p>
               </div>
             )}
-            
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Final Balance</div>
-              <div className="text-xl sm:text-2xl font-bold text-green-400">{formatCurrency(finalBalance)}</div>
-            </div>
-            
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Total Contributions</div>
-              <div className="text-xl sm:text-2xl font-bold text-emerald-400">{formatCurrency(totalContributions)}</div>
-              <div className="text-xs text-gray-400 mt-1">
-                {((totalContributions / finalBalance) * 100).toFixed(1)}% of final balance
-              </div>
-            </div>
-            
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Total Interest</div>
-              <div className="text-xl sm:text-2xl font-bold text-orange-400">{formatCurrency(totalInterest)}</div>
-              <div className="text-xs text-gray-400 mt-1">
-                {((totalInterest / finalBalance) * 100).toFixed(1)}% of final balance
-              </div>
-            </div>
+          </div>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              {/* Growth Chart */}
-              <div>
-                <div className="flex flex-wrap items-center justify-between mb-4">
-                  <h3 className={calculatorSectionHeaderClasses}>Savings Growth</h3>
-                  <div className="flex space-x-2 mt-2 sm:mt-0">
-                    <div className="flex rounded-md overflow-hidden">
+        {/* Results Section */}
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">Results</h2>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setViewType('chart')}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewType === 'chart' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                Chart
+              </button>
                       <button
-                        className={`px-4 py-1 text-sm font-medium ${viewType === 'table' ? 'bg-gray-600 text-gray-900 dark:text-white-foreground' : 'bg-gray-100 dark:bg-gray-800 text-gray-300'}`}
                         onClick={() => setViewType('table')}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewType === 'table' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
                       >
                         Table
                       </button>
-                      <button
-                        className={`px-4 py-1 text-sm font-medium ${viewType === 'chart' ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' : 'bg-gray-100 dark:bg-gray-800 text-gray-300'}`}
-                        onClick={() => setViewType('chart')}
-                      >
-                        Chart
-                      </button>
+            </div>
                     </div>
                     
                     {viewType === 'chart' && (
-                      <div className="flex rounded-md overflow-hidden">
+            <div className="space-y-6">
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-medium text-blue-400">Goal Progress</h3>
+                  <div className="flex space-x-2">
                         <button
-                          className={`px-4 py-1 text-sm font-medium ${chartType === 'line' ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' : 'bg-gray-100 dark:bg-gray-800 text-gray-300'}`}
                           onClick={() => setChartType('line')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        chartType === 'line' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
                         >
                           Line
                         </button>
                         <button
-                          className={`px-4 py-1 text-sm font-medium ${chartType === 'bar' ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' : 'bg-gray-100 dark:bg-gray-800 text-gray-300'}`}
                           onClick={() => setChartType('bar')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        chartType === 'bar' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
                         >
                           Bar
                         </button>
-                      </div>
-                    )}
+                  </div>
+                </div>
+                <div className="h-80 w-full">
+                  <canvas ref={progressChartRef}></canvas>
                   </div>
                 </div>
                 
-                {viewType === 'chart' && (
-                  <div className="h-64 sm:h-80">
-                    <canvas ref={growthChartRef}></canvas>
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                <h3 className="text-lg font-medium text-blue-400 mb-2">Savings Breakdown</h3>
+                <div className="h-80 w-full">
+                  <canvas ref={breakdownChartRef}></canvas>
+                </div>
+              </div>
                   </div>
                 )}
                 
                 {viewType === 'table' && (
-                  <div className="overflow-x-auto">
-                    <table className="calculator-table">
-                      <thead className="bg-gray-100 dark:bg-gray-800">
-                        <tr>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Year
-                          </th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Contribution
-                          </th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Interest
-                          </th>
-                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Balance
-                          </th>
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-x-auto">
+              <h3 className="text-lg font-medium text-blue-400 mb-4">Goal Progress Details</h3>
+              <table className="min-w-full divide-y divide-gray-700">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Month</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Deposit</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Interest</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Balance</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">% Complete</th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-700">
-                        {yearlyData.map((data) => (
-                          <tr key={data.year} className="hover:bg-muted">
-                            <td className="calculator-table-cell">
-                              Year {data.year}
-                            </td>
-                            <td className="calculator-table-cell">
-                              {formatCurrency(data.contribution)}
-                            </td>
-                            <td className="calculator-table-cell">
-                              {formatCurrency(data.interest)}
-                            </td>
-                            <td className="calculator-table-cell">
-                              {formatCurrency(data.balance)}
-                            </td>
+                <tbody className="divide-y divide-gray-700">
+                  {goalData.map((data, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{data.month}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{formatCurrency(data.deposit)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-green-400">{formatCurrency(data.interest)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-blue-400">{formatCurrency(data.balance)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{data.percentComplete.toFixed(1)}%</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 )}
-              </div>
-            </div>
-            
-            <div>
-              {/* Breakdown Chart */}
-              <div>
-                <h3 className={calculatorSectionHeaderClasses}>Final Balance Breakdown</h3>
-                <div className="h-64">
-                  <canvas ref={breakdownChartRef}></canvas>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

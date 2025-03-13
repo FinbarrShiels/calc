@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface VolumeCalculatorProps {
   calculator?: Calculator;
@@ -209,12 +209,12 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ calculator, unit })
             </div>
           </div>
           
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Volume Formula</h3>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Volume = Length × Width × Height
             </p>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               For irregular shapes, divide into regular sections and add the volumes together.
             </p>
           </div>
@@ -225,18 +225,18 @@ const VolumeCalculator: React.FC<VolumeCalculatorProps> = ({ calculator, unit })
       <h2 className="calculator-section-header">Results</h2>
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-6 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Volume
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {formatNumber(volume)} {unitInfo[unit].shortName}
             </div>
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {length} × {width} × {height} {unitInfo[unit].lengthUnit}
             </div>
           </div>
           
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Equivalent Volumes</h3>
             <ul className="space-y-2 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
               {unit !== 'cubic-feet' && (

@@ -67,10 +67,12 @@ const CompoundInterestChart = ({
 
   // Format currency for labels
   const formatCurrency = (value: number) => {
-    return `${currency}${value.toLocaleString('en-US', { 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
-    })}`;
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value).replace('$', currency);
   };
 
   // Format period labels based on breakdown type
@@ -218,6 +220,13 @@ const CompoundInterestChart = ({
         }
       },
       tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+        titleColor: '#e5e7eb',
+        bodyColor: '#e5e7eb',
+        borderColor: 'rgba(107, 114, 128, 0.5)',
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
         callbacks: {
           label: function(context) {
             let label = context.dataset.label || '';
@@ -235,18 +244,18 @@ const CompoundInterestChart = ({
     scales: {
       x: {
         grid: {
-          color: 'rgba(75, 85, 99, 0.2)' // gray-600 with opacity
+          color: 'rgba(255, 255, 255, 0.1)',
         },
         ticks: {
-          color: '#9ca3af' // text-gray-400
+          color: '#9ca3af',
         }
       },
       y: {
         grid: {
-          color: 'rgba(75, 85, 99, 0.2)' // gray-600 with opacity
+          color: 'rgba(255, 255, 255, 0.1)',
         },
         ticks: {
-          color: '#9ca3af', // text-gray-400
+          color: '#9ca3af',
           callback: function(value) {
             return formatCurrency(value as number);
           }
@@ -278,6 +287,13 @@ const CompoundInterestChart = ({
         }
       },
       tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+        titleColor: '#e5e7eb',
+        bodyColor: '#e5e7eb',
+        borderColor: 'rgba(107, 114, 128, 0.5)',
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
         callbacks: {
           label: function(context) {
             let label = context.dataset.label || '';
@@ -295,15 +311,15 @@ const CompoundInterestChart = ({
     scales: {
       x: {
         grid: {
-          color: 'rgba(75, 85, 99, 0.2)'
+          color: 'rgba(255, 255, 255, 0.1)',
         },
         ticks: {
-          color: '#9ca3af'
+          color: '#9ca3af',
         }
       },
       y: {
         grid: {
-          color: 'rgba(75, 85, 99, 0.2)'
+          color: 'rgba(255, 255, 255, 0.1)',
         },
         ticks: {
           color: '#9ca3af',
@@ -337,6 +353,13 @@ const CompoundInterestChart = ({
         }
       },
       tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+        titleColor: '#e5e7eb',
+        bodyColor: '#e5e7eb',
+        borderColor: 'rgba(107, 114, 128, 0.5)',
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
         callbacks: {
           label: function(context) {
             let label = context.dataset.label || '';
@@ -355,16 +378,16 @@ const CompoundInterestChart = ({
       x: {
         stacked: true,
         grid: {
-          color: 'rgba(75, 85, 99, 0.2)'
+          color: 'rgba(255, 255, 255, 0.1)',
         },
         ticks: {
-          color: '#9ca3af'
+          color: '#9ca3af',
         }
       },
       y: {
         stacked: true,
         grid: {
-          color: 'rgba(75, 85, 99, 0.2)'
+          color: 'rgba(255, 255, 255, 0.1)',
         },
         ticks: {
           color: '#9ca3af',

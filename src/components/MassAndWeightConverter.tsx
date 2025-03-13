@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface MassAndWeightConverterProps {
   calculator?: Calculator;
@@ -213,18 +213,18 @@ const MassAndWeightConverter: React.FC<MassAndWeightConverterProps> = ({ calcula
       <h2 className="calculator-section-header">Result</h2>
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {valueStr || '0'} {getUnitFullName(fromUnit)} equals
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {result.toLocaleString(undefined, { minimumFractionDigits: precision, maximumFractionDigits: precision })} {getUnitDisplayName(toUnit)}
             </div>
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {getUnitFullName(toUnit)}
             </div>
           </div>
           
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Common Mass Conversions</h3>
             <ul className="space-y-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
               <li>1 kilogram = 2.20462 pounds</li>
@@ -239,7 +239,7 @@ const MassAndWeightConverter: React.FC<MassAndWeightConverterProps> = ({ calcula
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Mass vs. Weight</h3>
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               <p>Mass is a measure of the amount of matter in an object, while weight is a measure of the force of gravity acting on that mass.</p>
               <p className="mt-2">On Earth, mass and weight are often used interchangeably, but they are different physical quantities. An object's mass remains constant regardless of location, while its weight varies depending on the gravitational field.</p>
               <p className="mt-2">The SI unit for mass is the kilogram (kg), while weight is measured in newtons (N).</p>

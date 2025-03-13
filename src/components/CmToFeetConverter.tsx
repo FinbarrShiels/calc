@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface CmToFeetConverterProps {
   calculator?: Calculator;
@@ -56,7 +56,7 @@ const CmToFeetConverter: React.FC<CmToFeetConverterProps> = ({ calculator }) => 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md mx-auto text-white dark:text-gray-900">
       <div className="mb-6">
-        <h2 className={calculatorSectionHeaderClasses}>Centimeters to Feet Converter</h2>
+        <h2 className="calculator-section-header">Centimeters to Feet Converter</h2>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
           <div className="mb-4">
@@ -67,7 +67,7 @@ const CmToFeetConverter: React.FC<CmToFeetConverterProps> = ({ calculator }) => 
               <input
                 type="tel"
                 id="cm"
-                className={inputClasses}
+                className="calculator-input"
                 value={cmStr}
                 onChange={handleCmChange} {...decimalInputProps}
               />
@@ -81,7 +81,7 @@ const CmToFeetConverter: React.FC<CmToFeetConverterProps> = ({ calculator }) => 
             </label>
             <select
               id="precision"
-              className={inputClasses}
+              className="calculator-input"
               value={precision}
               onChange={handlePrecisionChange}
             >
@@ -95,25 +95,25 @@ const CmToFeetConverter: React.FC<CmToFeetConverterProps> = ({ calculator }) => 
         </div>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+          <h3 className="calculator-section-header">Conversion Results</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Centimeters</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Centimeters</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">
                 {cmStr === '' ? '0' : parseFloat(cmStr).toLocaleString()} cm
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Feet and Inches</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Feet and Inches</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">
                 {feet} ft {inches.toFixed(precision)} in
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-              <div className={resultLabelClasses}>Conversion Formula</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
               <div className="text-md font-medium text-gray-300 mt-1">
                 {cmStr === '' ? '0' : parseFloat(cmStr).toLocaleString()} cm ÷ 2.54 = {(cmStr === '' ? 0 : parseFloat(cmStr) / CM_PER_INCH).toFixed(precision)} inches
               </div>
@@ -125,7 +125,7 @@ const CmToFeetConverter: React.FC<CmToFeetConverterProps> = ({ calculator }) => 
         </div>
         
         <div className="mt-8 calculator-card-alt p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Common Conversions</h3>
+          <h3 className="calculator-section-header">Common Conversions</h3>
           
           <div className="overflow-x-auto">
             <table className="calculator-table">

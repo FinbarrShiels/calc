@@ -14,7 +14,7 @@ import {
   Filler
 } from 'chart.js';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 // Register ChartJS components
 ChartJS.register(
@@ -278,7 +278,7 @@ const MMACalculator = () => {
             <div className="mb-4">
               <label className="block text-gray-300 mb-2">Currency</label>
               <select 
-                className={inputClasses}
+                className="calculator-input"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
               >
@@ -298,7 +298,7 @@ const MMACalculator = () => {
                 <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
                 <input
                   type="tel"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={initialDepositStr}
                   onChange={(e) => handleNumberInput(e.target.value, setInitialDepositStr)} {...decimalInputProps}
                 />
@@ -310,7 +310,7 @@ const MMACalculator = () => {
               <div className="relative">
                 <input
                   type="tel"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={interestRateStr}
                   onChange={(e) => handleNumberInput(e.target.value, setInterestRateStr)} {...decimalInputProps}
                 />
@@ -321,7 +321,7 @@ const MMACalculator = () => {
             <div className="mb-4">
               <label className="block text-gray-300 mb-2">Compound Frequency</label>
               <select 
-                className={inputClasses}
+                className="calculator-input"
                 value={compoundFrequency}
                 onChange={(e) => setCompoundFrequency(e.target.value)}
               >
@@ -337,7 +337,7 @@ const MMACalculator = () => {
               <label className="block text-gray-300 mb-2">Time Period (Years)</label>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={yearsStr}
                 onChange={(e) => handleNumberInput(e.target.value, setYearsStr)} {...decimalInputProps}
               />
@@ -349,7 +349,7 @@ const MMACalculator = () => {
                 <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
                 <input
                   type="tel"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={additionalDepositStr}
                   onChange={(e) => handleNumberInput(e.target.value, setAdditionalDepositStr)} {...decimalInputProps}
                 />
@@ -366,22 +366,22 @@ const MMACalculator = () => {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                 <h3 className="text-sm font-medium text-gray-400 mb-1">Future Value</h3>
-                <p className={resultValueClasses}>{formatCurrency(futureValue)}</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(futureValue)}</p>
               </div>
               
               <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                 <h3 className="text-sm font-medium text-gray-400 mb-1">Total Interest</h3>
-                <p className={resultValueClasses}>{formatCurrency(totalInterest)}</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalInterest)}</p>
               </div>
               
               <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                 <h3 className="text-sm font-medium text-gray-400 mb-1">Total Contributions</h3>
-                <p className={resultValueClasses}>{formatCurrency(totalContributions)}</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalContributions)}</p>
               </div>
               
               <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                 <h3 className="text-sm font-medium text-gray-400 mb-1">Effective Annual Rate</h3>
-                <p className={resultValueClasses}>{effectiveRate.toFixed(2)}%</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{effectiveRate.toFixed(2)}%</p>
               </div>
             </div>
             
@@ -429,7 +429,7 @@ const MMACalculator = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className={calculatorSectionHeaderClasses}>Benefits</h3>
+              <h3 className="calculator-section-header">Benefits</h3>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Higher interest rates than regular savings</li>
                 <li>FDIC insured (up to $250,000)</li>
@@ -439,7 +439,7 @@ const MMACalculator = () => {
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className={calculatorSectionHeaderClasses}>Considerations</h3>
+              <h3 className="calculator-section-header">Considerations</h3>
               <ul className="list-disc pl-5 space-y-1">
                 <li>May require higher minimum balances</li>
                 <li>Limited transactions per month</li>

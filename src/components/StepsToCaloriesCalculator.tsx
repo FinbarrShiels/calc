@@ -5,7 +5,7 @@ import { Calculator } from '@/data/calculators';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, BarElement } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
@@ -444,9 +444,9 @@ const StepsToCaloriesCalculator: React.FC<StepsToCaloriesCalculatorProps> = ({ c
           </div>
           
           {/* Intensity Explanation */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Walking Intensity Levels</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li><strong>Casual:</strong> Strolling, window shopping (2-2.5 mph)</li>
               <li><strong>Average:</strong> Normal walking pace (2.5-3.5 mph)</li>
               <li><strong>Brisk:</strong> Purposeful walking, slightly elevated heart rate (3.5-4.5 mph)</li>
@@ -460,11 +460,11 @@ const StepsToCaloriesCalculator: React.FC<StepsToCaloriesCalculatorProps> = ({ c
       <h2 className="calculator-section-header">Results</h2>
           
           {/* Calories Burned Result */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Estimated Calories Burned
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {formatNumber(caloriesBurned)} calories
             </div>
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
@@ -476,7 +476,7 @@ const StepsToCaloriesCalculator: React.FC<StepsToCaloriesCalculatorProps> = ({ c
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className={resultLabelClasses}>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Estimated Distance
                 </div>
                 <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -484,7 +484,7 @@ const StepsToCaloriesCalculator: React.FC<StepsToCaloriesCalculatorProps> = ({ c
                 </div>
               </div>
               <div>
-                <div className={resultLabelClasses}>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Estimated Time
                 </div>
                 <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -496,7 +496,7 @@ const StepsToCaloriesCalculator: React.FC<StepsToCaloriesCalculatorProps> = ({ c
           
           {/* Steps per Mile */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Your Estimated Steps per Mile
             </div>
             <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -518,10 +518,10 @@ const StepsToCaloriesCalculator: React.FC<StepsToCaloriesCalculatorProps> = ({ c
           {/* Weight Loss Equivalent */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Weight Loss Equivalent</h3>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               {caloriesBurned} calories is approximately equivalent to {(caloriesBurned / 3500).toFixed(3)} pounds of weight loss (3,500 calories = 1 pound).
             </p>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               If you walked this amount every day for a week, you could burn approximately {formatNumber(caloriesBurned * 7)} calories, equivalent to {((caloriesBurned * 7) / 3500).toFixed(2)} pounds.
             </p>
           </div>
@@ -529,7 +529,7 @@ const StepsToCaloriesCalculator: React.FC<StepsToCaloriesCalculatorProps> = ({ c
           {/* Tips */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Tips to Maximize Calorie Burn</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li>• Increase your walking speed to burn more calories per step</li>
               <li>• Include hills or stairs in your walking route</li>
               <li>• Use arm movements to engage more muscles</li>

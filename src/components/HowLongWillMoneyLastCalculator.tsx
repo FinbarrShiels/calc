@@ -13,7 +13,7 @@ import {
   Legend,
 } from 'chart.js';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 // Register ChartJS components
 ChartJS.register(
@@ -372,7 +372,7 @@ const HowLongWillMoneyLastCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Currency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
@@ -391,7 +391,7 @@ const HowLongWillMoneyLastCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={initialBalanceStr}
                 onChange={(e) => handleNumberInput(e.target.value, setInitialBalanceStr)} {...decimalInputProps}
               />
@@ -404,7 +404,7 @@ const HowLongWillMoneyLastCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={withdrawalAmountStr}
                 onChange={(e) => handleNumberInput(e.target.value, setWithdrawalAmountStr)} {...decimalInputProps}
               />
@@ -414,7 +414,7 @@ const HowLongWillMoneyLastCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Withdrawal Frequency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={withdrawalFrequency}
               onChange={(e) => setWithdrawalFrequency(e.target.value)}
             >
@@ -431,7 +431,7 @@ const HowLongWillMoneyLastCalculator = () => {
             <div className="relative">
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={interestRateStr}
                 onChange={(e) => handleNumberInput(e.target.value, setInterestRateStr)} {...decimalInputProps}
               />
@@ -442,7 +442,7 @@ const HowLongWillMoneyLastCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Compound Frequency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={compoundFrequency}
               onChange={(e) => setCompoundFrequency(e.target.value)}
             >
@@ -459,7 +459,7 @@ const HowLongWillMoneyLastCalculator = () => {
             <div className="relative">
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={inflationRateStr}
                 onChange={(e) => handleNumberInput(e.target.value, setInflationRateStr)} {...decimalInputProps}
                 disabled={!adjustForInflation}
@@ -489,24 +489,24 @@ const HowLongWillMoneyLastCalculator = () => {
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Money Will Last</h3>
-              <p className={resultValueClasses}>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatTime(timeToDeplete.years, timeToDeplete.months)}
               </p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Final Balance</h3>
-              <p className={resultValueClasses}>{formatCurrency(finalBalance)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(finalBalance)}</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Total Withdrawals</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalWithdrawals)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalWithdrawals)}</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Total Interest</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalInterest)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalInterest)}</p>
             </div>
           </div>
           
@@ -581,7 +581,7 @@ const HowLongWillMoneyLastCalculator = () => {
             </p>
             
             <div className="flex items-center mb-2">
-              <div className={inputClasses}>
+              <div className="calculator-input">
                 <div 
                   className="bg-red-500 h-4 rounded-full" 
                   style={{ width: `${Math.min((totalWithdrawals / (initialBalance + totalInterest)) * 100, 100)}%` }}
@@ -589,10 +589,10 @@ const HowLongWillMoneyLastCalculator = () => {
               </div>
               <span className="ml-2 text-gray-300">{Math.min(((totalWithdrawals / (initialBalance + totalInterest)) * 100), 100).toFixed(1)}%</span>
             </div>
-            <p className={resultLabelClasses}>Withdrawals (% of Total Available Funds)</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Withdrawals (% of Total Available Funds)</p>
             
             <div className="flex items-center mt-3 mb-2">
-              <div className={inputClasses}>
+              <div className="calculator-input">
                 <div 
                   className="bg-green-500 h-4 rounded-full" 
                   style={{ width: `${Math.min((totalInterest / (initialBalance + totalInterest)) * 100, 100)}%` }}
@@ -600,7 +600,7 @@ const HowLongWillMoneyLastCalculator = () => {
               </div>
               <span className="ml-2 text-gray-300">{Math.min(((totalInterest / (initialBalance + totalInterest)) * 100), 100).toFixed(1)}%</span>
             </div>
-            <p className={resultLabelClasses}>Interest (% of Total Available Funds)</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Interest (% of Total Available Funds)</p>
           </div>
         </div>
       </div>

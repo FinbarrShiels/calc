@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface WeightToVolumeConverterProps {
   calculator?: Calculator;
@@ -396,30 +396,30 @@ const WeightToVolumeConverter: React.FC<WeightToVolumeConverterProps> = ({ calcu
       <h2 className="calculator-section-header">Result</h2>
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {valueStr || '0'} {getUnitFullName(fromUnit)} of {getCurrentMaterial().name} equals
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {result.toLocaleString(undefined, { minimumFractionDigits: precision, maximumFractionDigits: precision })} {getUnitDisplayName(toUnit)}
             </div>
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {getUnitFullName(toUnit)}
             </div>
           </div>
           
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">About Material Density</h3>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Density is the mass of a substance per unit volume. It is used to convert between weight and volume.
             </p>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               The density of {getCurrentMaterial().name} is approximately {getCurrentMaterial().density} kg/L (kilograms per liter).
             </p>
           </div>
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Common Density Values</h3>
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               <ul className="list-disc pl-5 space-y-1">
                 <li><strong>Water:</strong> 1.0 kg/L (reference density)</li>
                 <li><strong>Milk:</strong> 1.03 kg/L</li>

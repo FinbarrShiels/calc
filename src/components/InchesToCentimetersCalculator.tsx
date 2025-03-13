@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface InchesToCentimetersCalculatorProps {
   calculator?: Calculator;
@@ -56,7 +56,7 @@ const InchesToCentimetersCalculator: React.FC<InchesToCentimetersCalculatorProps
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
       <div className="p-6">
-        <h2 className={calculatorSectionHeaderClasses}>Inches to Centimeters Calculator</h2>
+        <h2 className="calculator-section-header">Inches to Centimeters Calculator</h2>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
           <div className="mb-4">
@@ -67,7 +67,7 @@ const InchesToCentimetersCalculator: React.FC<InchesToCentimetersCalculatorProps
               <input
                 type="tel"
                 id="inches"
-                className={inputClasses}
+                className="calculator-input"
                 value={inchesStr} {...numericInputProps}
                 onChange={handleInchesChange}
               />
@@ -81,7 +81,7 @@ const InchesToCentimetersCalculator: React.FC<InchesToCentimetersCalculatorProps
             </label>
             <select
               id="precision"
-              className={inputClasses}
+              className="calculator-input"
               value={precision}
               onChange={handlePrecisionChange}
             >
@@ -95,25 +95,25 @@ const InchesToCentimetersCalculator: React.FC<InchesToCentimetersCalculatorProps
         </div>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+          <h3 className="calculator-section-header">Conversion Results</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Inches</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Inches</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">
                 {inchesStr === '' ? '0' : parseFloat(inchesStr).toLocaleString()} in
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Centimeters</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Centimeters</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">
                 {centimeters.toFixed(precision)} cm
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-              <div className={resultLabelClasses}>Conversion Formula</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
               <div className="text-md font-medium text-gray-300 mt-1">
                 {inchesStr === '' ? '0' : parseFloat(inchesStr).toLocaleString()} inches × 2.54 = {centimeters.toFixed(precision)} centimeters
               </div>
@@ -122,7 +122,7 @@ const InchesToCentimetersCalculator: React.FC<InchesToCentimetersCalculatorProps
         </div>
         
         <div className="mt-8 calculator-card-alt p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Common Conversions</h3>
+          <h3 className="calculator-section-header">Common Conversions</h3>
           
           <div className="overflow-x-auto">
             <table className="calculator-table">

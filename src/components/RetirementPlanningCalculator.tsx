@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Calculator } from '@/data/calculators';
-import { Chart } from 'chart.js/auto';
+import { Chart, ChartConfiguration } from 'chart.js/auto';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
 
 interface RetirementPlanningCalculatorProps {
   calculator?: Calculator;
@@ -181,11 +180,12 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
         labels,
         datasets: [
           {
-            label: 'Retirement Balance',
+            label: 'Balance',
             data: balanceData,
-            backgroundColor: chartType === 'line' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.7)',
-            borderColor: 'rgb(34, 197, 94)', // green-500
-            borderWidth: 2,
+            backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
+            borderColor: '#3b82f6', // blue-500
+            borderWidth: 1,
+            fill: chartType === 'line',
             tension: 0.1
           }
         ]
@@ -193,59 +193,49 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(100, 100, 100, 0.2)'
-            },
-            ticks: {
-              color: 'rgb(200, 200, 200)',
-              callback: function(value) {
-                return currencySymbol + value.toLocaleString();
-              }
-            },
-            title: {
-              display: true,
-              text: 'Balance',
-              color: 'rgb(200, 200, 200)'
-            }
-          },
-          x: {
-            grid: {
-              color: 'rgba(100, 100, 100, 0.2)'
-            },
-            ticks: {
-              color: 'rgb(200, 200, 200)',
-              maxRotation: 45,
-              minRotation: 45,
-              autoSkip: true,
-              maxTicksLimit: 10
-            },
-            title: {
-              display: true,
-              text: 'Age',
-              color: 'rgb(200, 200, 200)'
-            }
-          }
-        },
         plugins: {
           legend: {
+            position: 'top',
             labels: {
-              color: 'rgb(200, 200, 200)'
+              color: '#e5e7eb', // text-gray-200
+              font: {
+                size: 12
+              }
             }
           },
           tooltip: {
+            backgroundColor: 'rgba(17, 24, 39, 0.9)', // bg-gray-900 with opacity
+            titleColor: '#f9fafb', // text-gray-50
+            bodyColor: '#f3f4f6', // text-gray-100
+            padding: 10,
+            borderColor: 'rgba(75, 85, 99, 0.3)', // gray-600 with opacity
+            borderWidth: 1,
             callbacks: {
               label: function(context) {
-                let label = context.dataset.label || '';
-                if (label) {
-                  label += ': ';
-                }
-                if (context.parsed.y !== null) {
-                  label += currencySymbol + context.parsed.y.toLocaleString();
-                }
-                return label;
+                const rawValue = context.raw as number;
+                return `Balance: ${currencySymbol}${rawValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+              callback: function(value) {
+                return currencySymbol + value.toLocaleString();
               }
             }
           }
@@ -255,7 +245,7 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
   };
   
   const createBreakdownChart = () => {
-    if (!breakdownChartRef.current || yearlyData.length === 0) return;
+    if (!breakdownChartRef.current) return;
     
     const ctx = breakdownChartRef.current.getContext('2d');
     if (!ctx) return;
@@ -264,24 +254,32 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
       breakdownChartInstance.current.destroy();
     }
     
-    const lastYearData = yearlyData[yearlyData.length - 1];
+    const labels = yearlyData.map(data => `Age ${data.age}`);
+    const contributionsData = yearlyData.map(data => data.totalContributions);
+    const interestData = yearlyData.map(data => data.totalInterest);
+    
+    const currencySymbol = getCurrencySymbol();
     
     breakdownChartInstance.current = new Chart(ctx, {
-      type: 'pie',
+      type: 'bar',
       data: {
-        labels: ['Total Contributions', 'Total Interest'],
+        labels,
         datasets: [
           {
-            data: [lastYearData.totalContributions, lastYearData.totalInterest],
-            backgroundColor: [
-              'rgba(59, 130, 246, 0.7)', // blue-500
-              'rgba(249, 115, 22, 0.7)', // orange-500
-            ],
-            borderColor: [
-              'rgb(59, 130, 246)',
-              'rgb(249, 115, 22)',
-            ],
-            borderWidth: 1
+            label: 'Contributions',
+            data: contributionsData,
+            backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
+            borderColor: '#3b82f6', // blue-500
+            borderWidth: 1,
+            stack: 'Stack 0'
+          },
+          {
+            label: 'Interest',
+            data: interestData,
+            backgroundColor: 'rgba(16, 185, 129, 0.5)', // green-500 with opacity
+            borderColor: '#10b981', // green-500
+            borderWidth: 1,
+            stack: 'Stack 0'
           }
         ]
       },
@@ -290,19 +288,54 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'bottom',
+            position: 'top',
             labels: {
-              color: 'rgb(200, 200, 200)'
+              color: '#e5e7eb', // text-gray-200
+              font: {
+                size: 12
+              }
             }
           },
           tooltip: {
+            backgroundColor: 'rgba(17, 24, 39, 0.9)', // bg-gray-900 with opacity
+            titleColor: '#f9fafb', // text-gray-50
+            bodyColor: '#f3f4f6', // text-gray-100
+            padding: 10,
+            borderColor: 'rgba(75, 85, 99, 0.3)', // gray-600 with opacity
+            borderWidth: 1,
             callbacks: {
               label: function(context) {
-                const label = context.label || '';
-                const value = context.raw;
-                const total = context.dataset.data.reduce((a, b) => (a as number) + (b as number), 0);
-                const percentage = Math.round(((value as number) / (total as number)) * 100);
-                return `${label}: ${getCurrencySymbol()}${(value as number).toLocaleString()} (${percentage}%)`;
+                const dataValue = context.raw as number;
+                const label = context.dataset.label || '';
+                return `${label}: ${currencySymbol}${dataValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              },
+              footer: function(tooltipItems) {
+                const total = tooltipItems.reduce((sum, item) => sum + (item.raw as number), 0);
+                return `Total: ${currencySymbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+            }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+              callback: function(value) {
+                return currencySymbol + value.toLocaleString();
               }
             }
           }
@@ -319,11 +352,11 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
   };
   
   return (
-    <div className="bg-white dark:bg-gray-800 text-white dark:text-gray-900 rounded-lg shadow-xl p-6">
+    <div className="bg-gray-800 text-white rounded-lg shadow-xl p-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Input Section */}
-        <div className="calculator-card-alt rounded-lg p-5">
-          <h2 className={calculatorSectionHeaderClasses}>Retirement Planning Inputs</h2>
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <h2 className="text-xl font-bold text-white mb-4">Retirement Planning Inputs</h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -334,7 +367,7 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
                 id="currency"
                 value={selectedCurrency}
                 onChange={handleCurrencyChange}
-                className={inputClasses}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {currencyOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -355,7 +388,7 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
                 onChange={(e) => setCurrentAge(Number(e.target.value))}
                 min="18"
                 max="100"
-                className={inputClasses}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
@@ -370,7 +403,7 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
                 onChange={(e) => setRetirementAge(Number(e.target.value))}
                 min={currentAge + 1}
                 max="100"
-                className={inputClasses}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
@@ -388,7 +421,7 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
                   value={currentSavings} {...numericInputProps}
                   onChange={(e) => setCurrentSavings(Number(e.target.value))}
                   min="0"
-                  className={inputClasses}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -407,7 +440,7 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
                   value={annualContribution} {...numericInputProps}
                   onChange={(e) => setAnnualContribution(Number(e.target.value))}
                   min="0"
-                  className={inputClasses}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -425,7 +458,7 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
                   min="0"
                   max="30"
                   step="0.1"
-                  className={inputClasses}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <span className="text-gray-400">%</span>
@@ -446,7 +479,7 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
                   min="0"
                   max="20"
                   step="0.1"
-                  className={inputClasses}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <span className="text-gray-400">%</span>
@@ -467,7 +500,7 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
                   min="0"
                   max="20"
                   step="0.1"
-                  className={inputClasses}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <span className="text-gray-400">%</span>
@@ -476,50 +509,50 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
             </div>
           </div>
           
-          <div className="mt-6 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+          <div className="mt-6 bg-gray-800 p-4 rounded-md border border-gray-700">
             <h3 className="text-lg font-medium mb-3 text-blue-400">Retirement Summary</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-gray-400 text-sm">Years Until Retirement</p>
-                <p className="text-xl font-semibold">{retirementAge - currentAge} years</p>
+                <p className="text-xl font-semibold text-white">{retirementAge - currentAge} years</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Retirement Balance</p>
-                <p className={calculatorSectionHeaderClasses}>{formatCurrency(retirementBalance)}</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(retirementBalance)}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Annual Retirement Income</p>
-                <p className={calculatorSectionHeaderClasses}>{formatCurrency(annualRetirementIncome)}</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(annualRetirementIncome)}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Monthly Retirement Income</p>
-                <p className={calculatorSectionHeaderClasses}>{formatCurrency(annualRetirementIncome / 12)}</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(annualRetirementIncome / 12)}</p>
               </div>
             </div>
           </div>
         </div>
         
         {/* Results Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-5">
+        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
           <div className="flex justify-between items-center mb-4">
-            <h2 className={calculatorSectionHeaderClasses}>Results</h2>
+            <h2 className="text-xl font-bold text-white">Results</h2>
             <div className="flex space-x-2">
               <button
                 onClick={() => setViewType('chart')}
-                className={`px-3 py-1 rounded-md text-sm ${
+                className={`px-4 py-1 rounded-md ${
                   viewType === 'chart' 
-                    ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' 
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
                 Chart
               </button>
               <button
                 onClick={() => setViewType('table')}
-                className={`px-3 py-1 rounded-md text-sm ${
+                className={`px-4 py-1 rounded-md ${
                   viewType === 'table' 
-                    ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' 
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
                 Table
@@ -530,91 +563,96 @@ const RetirementPlanningCalculator: React.FC<RetirementPlanningCalculatorProps> 
           {viewType === 'chart' && (
             <div className="space-y-6">
               <div>
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-lg font-medium text-green-400">Balance Growth</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-white">Balance Growth</h3>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => setChartType('line')}
-                      className={`px-2 py-1 rounded-md text-xs ${
+                      className={`px-4 py-1 rounded-md ${
                         chartType === 'line' 
-                          ? 'bg-green-600 text-gray-900 dark:text-white-foreground' 
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
                       Line
                     </button>
                     <button
                       onClick={() => setChartType('bar')}
-                      className={`px-2 py-1 rounded-md text-xs ${
+                      className={`px-4 py-1 rounded-md ${
                         chartType === 'bar' 
-                          ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' 
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
                       Bar
                     </button>
                   </div>
                 </div>
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-4" style={{ height: '300px' }}>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700" style={{ height: '300px' }}>
                   <canvas ref={growthChartRef}></canvas>
                 </div>
               </div>
               
               <div>
-                <h3 className="text-lg font-medium mb-2 text-orange-400">Contributions vs. Interest</h3>
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-4" style={{ height: '250px' }}>
+                <h3 className="text-lg font-semibold mb-4 text-white">Breakdown</h3>
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700" style={{ height: '300px' }}>
                   <canvas ref={breakdownChartRef}></canvas>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Final Balance</h3>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(retirementBalance)}</p>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Total Contributions</h3>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(totalContributions)}</p>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Total Interest</h3>
+                  <p className="text-2xl font-bold text-green-400">{formatCurrency(totalInterest)}</p>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Years to Retirement</h3>
+                  <p className="text-2xl font-bold text-white">{retirementAge - currentAge} years</p>
                 </div>
               </div>
             </div>
           )}
           
           {viewType === 'table' && (
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
-              <div className="max-h-[550px] overflow-y-auto">
-                <table className="calculator-table">
-                  <thead className={secondaryButtonClasses}>
-                    <tr>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Age
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Year
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Contribution
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Interest
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Balance
-                      </th>
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs uppercase bg-gray-900 text-gray-300">
+                  <tr>
+                    <th className="px-4 py-3">Year</th>
+                    <th className="px-4 py-3">Age</th>
+                    <th className="px-4 py-3">Contribution</th>
+                    <th className="px-4 py-3">Interest</th>
+                    <th className="px-4 py-3">Balance</th>
+                    <th className="px-4 py-3">Total Contributions</th>
+                    <th className="px-4 py-3">Total Interest</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-gray-100 dark:bg-gray-800 divide-y divide-gray-600">
+                <tbody>
                     {yearlyData.map((data, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-muted' : 'bg-gray-650'}>
-                        <td className="calculator-table-cell">
-                          {data.age}
-                        </td>
-                        <td className="calculator-table-cell">
-                          {data.year}
-                        </td>
-                        <td className="calculator-table-cell">
-                          {formatCurrency(data.contribution)}
-                        </td>
-                        <td className="calculator-table-cell">
-                          {formatCurrency(data.interest)}
-                        </td>
-                        <td className="calculator-table-cell">
-                          {formatCurrency(data.balance)}
-                        </td>
+                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-900 bg-opacity-50' : ''}>
+                      <td className="px-4 py-2 text-gray-300">{data.year}</td>
+                      <td className="px-4 py-2 text-gray-300">{data.age}</td>
+                      <td className="px-4 py-2 text-gray-300">{formatCurrency(data.contribution)}</td>
+                      <td className="px-4 py-2 text-green-400">{formatCurrency(data.interest)}</td>
+                      <td className="px-4 py-2 text-blue-400">{formatCurrency(data.balance)}</td>
+                      <td className="px-4 py-2 text-gray-300">{formatCurrency(data.totalContributions)}</td>
+                      <td className="px-4 py-2 text-green-400">{formatCurrency(data.totalInterest)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
             </div>
           )}
         </div>

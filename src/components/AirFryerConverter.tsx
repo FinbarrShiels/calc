@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface AirFryerConverterProps {
   calculator?: Calculator;
@@ -303,9 +303,9 @@ const AirFryerConverter: React.FC<AirFryerConverterProps> = ({ calculator }) => 
           </div>
           
           {/* Conversion Explanation */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Air Fryer Tips</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li>• Preheat your air fryer for 3-5 minutes before cooking</li>
               <li>• Arrange food in a single layer for best results</li>
               <li>• Shake the basket or flip food halfway through cooking</li>
@@ -320,11 +320,11 @@ const AirFryerConverter: React.FC<AirFryerConverterProps> = ({ calculator }) => 
       <h2 className="calculator-section-header">Air Fryer Settings</h2>
           
           {/* Temperature Result */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Air Fryer Temperature
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {airFryerTemp}°{tempUnit === 'celsius' ? 'C' : 'F'}
             </div>
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
@@ -333,11 +333,11 @@ const AirFryerConverter: React.FC<AirFryerConverterProps> = ({ calculator }) => 
           </div>
           
           {/* Cooking Time Result */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Air Fryer Cooking Time
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {airFryerTime} minutes
             </div>
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
@@ -471,7 +471,7 @@ const AirFryerConverter: React.FC<AirFryerConverterProps> = ({ calculator }) => 
           {/* Important Note */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Important Note</h3>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               These are approximate conversions. Air fryer models vary, so you may need to adjust temperature and time based on your specific air fryer. Always check food for doneness before serving.
             </p>
           </div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface HowMuchFlooringCalculatorProps {
   calculator?: Calculator;
@@ -206,7 +206,7 @@ const HowMuchFlooringCalculator: React.FC<HowMuchFlooringCalculatorProps> = ({ c
             </p>
           </div>
           
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Tips for Measuring</h3>
             <ul className="space-y-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
               <li>• Measure at multiple points for irregular rooms</li>
@@ -222,24 +222,24 @@ const HowMuchFlooringCalculator: React.FC<HowMuchFlooringCalculatorProps> = ({ c
       <h2 className="calculator-section-header">Results</h2>
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-6 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Total Area
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {totalArea.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {getSquareUnitDisplayName(measurementUnit)}
             </div>
           </div>
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-6 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Total Area (with {wastagePercentage}% wastage)
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {totalAreaWithWastage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {getSquareUnitDisplayName(measurementUnit)}
             </div>
           </div>
           
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Equivalent Measurements</h3>
             <ul className="space-y-2 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
               <li className="flex justify-between">

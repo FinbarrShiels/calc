@@ -13,7 +13,7 @@ import {
   Legend,
 } from 'chart.js';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 // Register ChartJS components
 ChartJS.register(
@@ -1256,7 +1256,7 @@ const LoanPayoffCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Currency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
@@ -1276,7 +1276,7 @@ const LoanPayoffCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={loanBalanceStr}
                 onChange={(e) => handleNumberInput(e.target.value, setLoanBalanceStr)} {...decimalInputProps}
               />
@@ -1288,7 +1288,7 @@ const LoanPayoffCalculator = () => {
             <div className="relative">
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={interestRateStr}
                 onChange={(e) => handleNumberInput(e.target.value, setInterestRateStr)} {...decimalInputProps}
               />
@@ -1299,7 +1299,7 @@ const LoanPayoffCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Compound Frequency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={compoundFrequency}
               onChange={(e) => setCompoundFrequency(e.target.value)}
             >
@@ -1314,7 +1314,7 @@ const LoanPayoffCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Payment Strategy</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={paymentStrategy}
               onChange={(e) => setPaymentStrategy(e.target.value)}
             >
@@ -1331,7 +1331,7 @@ const LoanPayoffCalculator = () => {
                   <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
                   <input
                     type="tel"
-                    className={inputClasses}
+                    className="calculator-input"
                     value={minPaymentStr}
                     onChange={(e) => handleNumberInput(e.target.value, setMinPaymentStr)} {...decimalInputProps}
                   />
@@ -1344,7 +1344,7 @@ const LoanPayoffCalculator = () => {
                   <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
                   <input
                     type="tel"
-                    className={inputClasses}
+                    className="calculator-input"
                     value={extraPaymentStr}
                     onChange={(e) => handleNumberInput(e.target.value, setExtraPaymentStr)} {...decimalInputProps}
                   />
@@ -1356,7 +1356,7 @@ const LoanPayoffCalculator = () => {
               <label className="block text-gray-300 mb-2">Target Months to Payoff</label>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={targetMonthsStr}
                 onChange={(e) => handleNumberInput(e.target.value, setTargetMonthsStr)} {...decimalInputProps}
               />
@@ -1366,7 +1366,7 @@ const LoanPayoffCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Payment Frequency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={paymentFrequency}
               onChange={(e) => setPaymentFrequency(e.target.value)}
             >
@@ -1400,26 +1400,26 @@ const LoanPayoffCalculator = () => {
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Time to Payoff</h3>
-              <p className={resultValueClasses}>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatTime(timeToPayoff.years, timeToPayoff.months)}
               </p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Total Payments</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalPayments)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalPayments)}</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Total Interest</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalInterestPaid)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalInterestPaid)}</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">
                 {paymentStrategy === 'target' ? 'Required Payment' : 'Monthly Payment'}
               </h3>
-              <p className={resultValueClasses}>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {paymentStrategy === 'target' 
                   ? formatCurrency(requiredPayment) 
                   : formatCurrency(minPayment + extraPayment)}
@@ -1508,7 +1508,7 @@ const LoanPayoffCalculator = () => {
                 </div>
                 
                 {/* Progress bar without text inside */}
-                <div className={inputClasses}>
+                <div className="calculator-input">
                   <div 
                     className="bg-green-500 h-5 rounded-l-full" 
                     style={{ 

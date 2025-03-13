@@ -1,669 +1,647 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
-import CarLoanChart from './CarLoanChart';
-import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+import React, { useState, useEffect } from 'react';
+import { Calculator } from '@/data/calculators';
+import { numericInputProps } from '@/utils/inputUtils';
+import { Line, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
 
-interface PaymentRow {
-  paymentNumber: number;
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+interface CarLoanCalculatorProps {
+  calculator?: Calculator;
+}
+
+interface CurrencyOption {
+  value: string;
+  label: string;
+  symbol: string;
+}
+
+interface MonthlyPaymentData {
+  month: number;
   payment: number;
   principal: number;
   interest: number;
-  remainingBalance: number;
-  totalInterest: number;
-  totalPrincipal: number;
+  balance: number;
 }
 
-const CarLoanCalculator = () => {
-  // State for form inputs
-  const [currency, setCurrency] = useState('$');
-  const [loanAmountStr, setLoanAmountStr] = useState('25000');
-  const [interestRateStr, setInterestRateStr] = useState('4.5');
-  const [yearsStr, setYearsStr] = useState('5');
-  const [monthsStr, setMonthsStr] = useState('0');
-  const [startDateStr, setStartDateStr] = useState(new Date().toISOString().split('T')[0]);
-  const [additionalPaymentStr, setAdditionalPaymentStr] = useState('0');
-  const [additionalPaymentFrequency, setAdditionalPaymentFrequency] = useState('monthly');
-  const [oneTimePaymentStr, setOneTimePaymentStr] = useState('0');
-  const [oneTimePaymentType, setOneTimePaymentType] = useState('balloon');
-  const [oneTimePaymentDateStr, setOneTimePaymentDateStr] = useState(
-    new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
-  );
+interface YearlyPaymentData {
+  year: number;
+  payment: number;
+  principal: number;
+  interest: number;
+  balance: number;
+}
 
-  // Derived numeric values for calculations
-  const loanAmount = parseFloat(loanAmountStr) || 0;
-  const interestRate = parseFloat(interestRateStr) || 0;
-  const years = parseInt(yearsStr) || 0;
-  const months = parseInt(monthsStr) || 0;
-  const additionalPayment = parseFloat(additionalPaymentStr) || 0;
-  const oneTimePayment = parseFloat(oneTimePaymentStr) || 0;
-  const startDate = new Date(startDateStr);
-  const oneTimePaymentDate = new Date(oneTimePaymentDateStr);
+type ViewType = 'chart' | 'table';
+type ChartType = 'line' | 'bar';
 
-  // State for calculation results
-  const [monthlyPayment, setMonthlyPayment] = useState(0);
-  const [totalPayments, setTotalPayments] = useState(0);
-  const [totalInterest, setTotalInterest] = useState(0);
-  const [payoffDate, setPayoffDate] = useState<Date | null>(null);
-  const [amortizationSchedule, setAmortizationSchedule] = useState<PaymentRow[]>([]);
-  const [viewMode, setViewMode] = useState('table');
-  const [chartType, setChartType] = useState<'line' | 'bar' | 'stacked'>('stacked');
-  const [yearlyView, setYearlyView] = useState(false);
-
-  // Handle input changes with proper validation
-  const handleNumberInput = (
-    value: string, 
-    setter: React.Dispatch<React.SetStateAction<string>>,
-    allowNegative: boolean = false
-  ) => {
-    // Allow empty input
-    if (value === '') {
-      setter('');
-      return;
-    }
+const CarLoanCalculator: React.FC<CarLoanCalculatorProps> = ({ calculator }) => {
+  // Currency options
+  const currencyOptions: CurrencyOption[] = [
+    { value: 'USD', label: 'USD ($)', symbol: '$' },
+    { value: 'EUR', label: 'EUR (€)', symbol: '€' },
+    { value: 'GBP', label: 'GBP (£)', symbol: '£' },
+    { value: 'JPY', label: 'JPY (¥)', symbol: '¥' },
+    { value: 'INR', label: 'INR (₹)', symbol: '₹' }
+  ];
+  
+  // State for inputs
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
+  const [carPrice, setCarPrice] = useState<number>(30000);
+  const [downPayment, setDownPayment] = useState<number>(5000);
+  const [tradeInValue, setTradeInValue] = useState<number>(0);
+  const [loanTerm, setLoanTerm] = useState<number>(5);
+  const [interestRate, setInterestRate] = useState<number>(4.5);
+  const [salesTaxRate, setSalesTaxRate] = useState<number>(6);
+  
+  // State for results
+  const [loanAmount, setLoanAmount] = useState<number>(0);
+  const [monthlyPayment, setMonthlyPayment] = useState<number>(0);
+  const [totalInterest, setTotalInterest] = useState<number>(0);
+  const [totalCost, setTotalCost] = useState<number>(0);
+  const [monthlyPaymentData, setMonthlyPaymentData] = useState<MonthlyPaymentData[]>([]);
+  const [yearlyPaymentData, setYearlyPaymentData] = useState<YearlyPaymentData[]>([]);
+  
+  // View state
+  const [viewType, setViewType] = useState<ViewType>('chart');
+  const [chartType, setChartType] = useState<ChartType>('line');
+  
+  // Get currency symbol
+  const getCurrencySymbol = (): string => {
+    const currency = currencyOptions.find(c => c.value === selectedCurrency);
+    return currency ? currency.symbol : '$';
+  };
+  
+  // Handle currency change
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCurrency(e.target.value);
+  };
+  
+  // Calculate loan details
+  const calculateLoan = () => {
+    // Calculate sales tax
+    const salesTax = (carPrice * salesTaxRate) / 100;
     
-    // Handle special cases for decimal input
-    if (value === '.' || value === '0.') {
-      setter('0.');
-      return;
-    }
+    // Calculate loan amount
+    const calculatedLoanAmount = carPrice + salesTax - downPayment - tradeInValue;
     
-    if (value === '-' || value === '-.') {
-      if (allowNegative) {
-        setter('-');
-      }
-      return;
-    }
+    // Calculate monthly payment
+    const monthlyInterestRate = interestRate / 100 / 12;
+    const numberOfPayments = loanTerm * 12;
     
-    // Validate the input format
-    const regex = allowNegative 
-      ? /^-?\d*\.?\d*$/ // Allow negative numbers
-      : /^\d*\.?\d*$/;  // Only positive numbers
-      
-    if (regex.test(value)) {
-      // Remove leading zeros for non-decimal numbers
-      if (value.indexOf('.') !== 1 && value.startsWith('0') && value.length > 1 && !value.startsWith('0.')) {
-        setter(value.replace(/^0+/, ''));
+    let calculatedMonthlyPayment = 0;
+    
+    if (monthlyInterestRate === 0) {
+      calculatedMonthlyPayment = calculatedLoanAmount / numberOfPayments;
       } else {
-        setter(value);
-      }
-    }
-  };
-
-  // Calculate car loan
-  const calculateCarLoan = () => {
-    // Calculate total number of payments
-    const totalNumberOfPayments = years * 12 + months;
-    
-    // Calculate monthly interest rate
-    const monthlyInterestRate = (interestRate / 100) / 12;
-    
-    // Calculate monthly payment using the formula: PMT = P * r * (1+r)^n / ((1+r)^n - 1)
-    const paymentAmount = loanAmount * 
-      (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalNumberOfPayments)) / 
-      (Math.pow(1 + monthlyInterestRate, totalNumberOfPayments) - 1);
-    
-    // Calculate amortization schedule
-    const schedule: PaymentRow[] = [];
-    
-    let remainingBalance = loanAmount;
-    let paymentNumber = 1;
-    let totalInterestPaid = 0;
-    let totalPrincipalPaid = 0;
-    let currentDate = new Date(startDate);
-    let oneTimePaymentApplied = false;
-    
-    // Add initial row to schedule
-    schedule.push({
-      paymentNumber: 0,
-      payment: 0,
-      principal: 0,
-      interest: 0,
-      remainingBalance: remainingBalance,
-      totalInterest: 0,
-      totalPrincipal: 0
-    });
-    
-    while (remainingBalance > 0 && paymentNumber <= totalNumberOfPayments * 2) { // Safety limit to prevent infinite loops
-      // Calculate interest for this period
-      const interestPayment = remainingBalance * monthlyInterestRate;
-      
-      // Calculate principal for this period
-      let principalPayment = paymentAmount - interestPayment;
-      
-      // Add additional payment if applicable
-      let additionalPaymentThisMonth = 0;
-      if (additionalPayment > 0) {
-        if (additionalPaymentFrequency === 'monthly' || 
-            (additionalPaymentFrequency === 'quarterly' && paymentNumber % 3 === 0) ||
-            (additionalPaymentFrequency === 'annually' && paymentNumber % 12 === 0)) {
-          additionalPaymentThisMonth = additionalPayment;
-          principalPayment += additionalPaymentThisMonth;
-        }
-      }
-      
-      // Apply one-time payment if applicable
-      let oneTimePaymentThisMonth = 0;
-      if (oneTimePayment > 0 && !oneTimePaymentApplied) {
-        const paymentDate = new Date(currentDate);
-        
-        if (oneTimePaymentType === 'balloon' && paymentNumber === totalNumberOfPayments) {
-          oneTimePaymentThisMonth = oneTimePayment;
-          principalPayment += oneTimePaymentThisMonth;
-          oneTimePaymentApplied = true;
-        } else if (oneTimePaymentType === 'at date' && 
-                  paymentDate.getFullYear() === oneTimePaymentDate.getFullYear() && 
-                  paymentDate.getMonth() === oneTimePaymentDate.getMonth()) {
-          oneTimePaymentThisMonth = oneTimePayment;
-          principalPayment += oneTimePaymentThisMonth;
-          oneTimePaymentApplied = true;
-        }
-      }
-      
-      // Adjust principal payment if it's more than remaining balance
-      if (principalPayment > remainingBalance) {
-        principalPayment = remainingBalance;
-      }
-      
-      // Calculate total payment
-      const totalPayment = interestPayment + principalPayment;
-      
-      // Update remaining balance
-      remainingBalance -= principalPayment;
-      
-      // Update totals
-      totalInterestPaid += interestPayment;
-      totalPrincipalPaid += principalPayment;
-      
-      // Add to schedule
-      schedule.push({
-        paymentNumber,
-        payment: parseFloat(totalPayment.toFixed(2)),
-        principal: parseFloat(principalPayment.toFixed(2)),
-        interest: parseFloat(interestPayment.toFixed(2)),
-        remainingBalance: parseFloat(remainingBalance.toFixed(2)),
-        totalInterest: parseFloat(totalInterestPaid.toFixed(2)),
-        totalPrincipal: parseFloat(totalPrincipalPaid.toFixed(2))
-      });
-      
-      // Increment payment number
-      paymentNumber++;
-      
-      // Update date for next payment
-      currentDate.setMonth(currentDate.getMonth() + 1);
-      
-      // Break if balance is effectively zero (floating point precision issues)
-      if (remainingBalance < 0.01) {
-        remainingBalance = 0;
-      }
+      calculatedMonthlyPayment = calculatedLoanAmount * 
+        (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / 
+        (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
     }
     
-    // Set results
-    setMonthlyPayment(parseFloat(paymentAmount.toFixed(2)));
-    setTotalPayments(parseFloat((paymentAmount * totalNumberOfPayments).toFixed(2)));
-    setTotalInterest(parseFloat(totalInterestPaid.toFixed(2)));
-    setPayoffDate(new Date(currentDate));
-    setAmortizationSchedule(schedule);
-  };
-
-  // Format currency
-  const formatCurrency = (value: number) => {
-    return `${currency}${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
-
-  // Format date
-  const formatDate = (date: Date | null) => {
-    if (!date) return 'N/A';
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  };
-
-  // Get yearly summary if yearly view is enabled
-  const getYearlySummary = () => {
-    if (!yearlyView || amortizationSchedule.length === 0) return amortizationSchedule;
+    // Calculate total interest
+    const totalPayments = calculatedMonthlyPayment * numberOfPayments;
+    const calculatedTotalInterest = totalPayments - calculatedLoanAmount;
     
-    const yearlySummary: PaymentRow[] = [];
-    let currentYear = 1;
+    // Calculate total cost
+    const calculatedTotalCost = downPayment + tradeInValue + totalPayments;
+    
+    // Update state with calculated values
+    setLoanAmount(calculatedLoanAmount);
+    setMonthlyPayment(calculatedMonthlyPayment);
+    setTotalInterest(calculatedTotalInterest);
+    setTotalCost(calculatedTotalCost);
+    
+    // Generate amortization schedule
+    generateAmortizationSchedule(calculatedLoanAmount, monthlyInterestRate, numberOfPayments, calculatedMonthlyPayment);
+  };
+  
+  // Generate amortization schedule
+  const generateAmortizationSchedule = (
+    loanAmount: number, 
+    monthlyInterestRate: number, 
+    numberOfPayments: number,
+    monthlyPayment: number
+  ) => {
+    let balance = loanAmount;
+    const monthlyData: MonthlyPaymentData[] = [];
+    const yearlyData: YearlyPaymentData[] = [];
+    
     let yearlyPayment = 0;
     let yearlyPrincipal = 0;
     let yearlyInterest = 0;
     
-    amortizationSchedule.forEach((payment, index) => {
-      if (payment.paymentNumber === 0) {
-        yearlySummary.push(payment);
-        return;
-      }
+    // Calculate monthly data
+    for (let month = 1; month <= numberOfPayments; month++) {
+      const interestPayment = balance * monthlyInterestRate;
+      const principalPayment = monthlyPayment - interestPayment;
       
-      const paymentYear = Math.ceil(payment.paymentNumber / 12);
+      balance -= principalPayment;
       
-      if (paymentYear === currentYear) {
-        yearlyPayment += payment.payment;
-        yearlyPrincipal += payment.principal;
-        yearlyInterest += payment.interest;
-      } else {
-        // Add previous year summary
-        yearlySummary.push({
-          paymentNumber: currentYear,
-          payment: parseFloat(yearlyPayment.toFixed(2)),
-          principal: parseFloat(yearlyPrincipal.toFixed(2)),
-          interest: parseFloat(yearlyInterest.toFixed(2)),
-          remainingBalance: amortizationSchedule[index - 1].remainingBalance,
-          totalInterest: amortizationSchedule[index - 1].totalInterest,
-          totalPrincipal: amortizationSchedule[index - 1].totalPrincipal
+      // Ensure balance doesn't go below zero due to rounding errors
+      if (balance < 0) balance = 0;
+      
+      // Add to monthly data
+      monthlyData.push({
+        month,
+        payment: monthlyPayment,
+        principal: principalPayment,
+        interest: interestPayment,
+        balance
+      });
+      
+      // Accumulate yearly totals
+      yearlyPayment += monthlyPayment;
+      yearlyPrincipal += principalPayment;
+      yearlyInterest += interestPayment;
+      
+      // If end of year or last payment, add to yearly data
+      if (month % 12 === 0 || month === numberOfPayments) {
+        const year = Math.ceil(month / 12);
+        yearlyData.push({
+          year,
+          payment: yearlyPayment,
+          principal: yearlyPrincipal,
+          interest: yearlyInterest,
+          balance
         });
         
-        // Reset for new year
-        currentYear = paymentYear;
-        yearlyPayment = payment.payment;
-        yearlyPrincipal = payment.principal;
-        yearlyInterest = payment.interest;
+        // Reset yearly accumulators
+        yearlyPayment = 0;
+        yearlyPrincipal = 0;
+        yearlyInterest = 0;
       }
-      
-      // Add last year if this is the last payment
-      if (index === amortizationSchedule.length - 1) {
-        yearlySummary.push({
-          paymentNumber: currentYear,
-          payment: parseFloat(yearlyPayment.toFixed(2)),
-          principal: parseFloat(yearlyPrincipal.toFixed(2)),
-          interest: parseFloat(yearlyInterest.toFixed(2)),
-          remainingBalance: payment.remainingBalance,
-          totalInterest: payment.totalInterest,
-          totalPrincipal: payment.totalPrincipal
-        });
-      }
-    });
+    }
     
-    return yearlySummary;
+    setMonthlyPaymentData(monthlyData);
+    setYearlyPaymentData(yearlyData);
   };
-
-  // Get the current schedule based on the view mode
-  const getCurrentSchedule = () => {
-    return yearlyView ? getYearlySummary() : amortizationSchedule;
-  };
-
-  // Calculate on input change
+  
+  // Calculate when inputs change
   useEffect(() => {
-    calculateCarLoan();
-  }, [
-    loanAmountStr,
-    interestRateStr,
-    yearsStr,
-    monthsStr,
-    additionalPaymentStr,
-    additionalPaymentFrequency,
-    oneTimePaymentStr,
-    oneTimePaymentType,
-    oneTimePaymentDateStr
-  ]);
+    calculateLoan();
+  }, [carPrice, downPayment, tradeInValue, loanTerm, interestRate, salesTaxRate]);
+
+  // Format currency
+  const formatCurrency = (value: number): string => {
+    return getCurrencySymbol() + value.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  };
+  
+  // Format percentage
+  const formatPercentage = (value: number): string => {
+    return value.toFixed(2) + '%';
+  };
+  
+  // Chart data for payment breakdown
+  const paymentChartData = {
+    labels: yearlyPaymentData.map(data => `Year ${data.year}`),
+    datasets: [
+      {
+        label: 'Principal',
+        data: yearlyPaymentData.map(data => data.principal),
+        backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
+        borderColor: '#3b82f6', // blue-500
+        borderWidth: 1,
+        stack: 'Stack 0'
+      },
+      {
+        label: 'Interest',
+        data: yearlyPaymentData.map(data => data.interest),
+        backgroundColor: 'rgba(239, 68, 68, 0.5)', // red-500 with opacity
+        borderColor: '#ef4444', // red-500
+        borderWidth: 1,
+        stack: 'Stack 0'
+      }
+    ]
+  };
+  
+  // Chart data for balance
+  const balanceChartData = {
+    labels: yearlyPaymentData.map(data => `Year ${data.year}`),
+    datasets: [
+      {
+        label: 'Remaining Balance',
+        data: yearlyPaymentData.map(data => data.balance),
+        backgroundColor: 'rgba(139, 92, 246, 0.5)', // purple-500 with opacity
+        borderColor: '#8b5cf6', // purple-500
+        borderWidth: 2,
+        tension: 0.1
+      }
+    ]
+  };
+  
+  // Chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+        },
+        ticks: {
+          color: '#e5e7eb', // text-gray-200
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+        },
+        ticks: {
+          color: '#e5e7eb', // text-gray-200
+          callback: function(value: any) {
+            return getCurrencySymbol() + value.toLocaleString();
+          }
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: '#e5e7eb', // text-gray-200
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.9)', // bg-gray-900 with opacity
+        titleColor: '#f9fafb', // text-gray-50
+        bodyColor: '#f3f4f6', // text-gray-100
+        padding: 10,
+        borderColor: 'rgba(75, 85, 99, 0.3)', // gray-600 with opacity
+        borderWidth: 1,
+        callbacks: {
+          label: function(context: any) {
+            const label = context.dataset.label || '';
+            const value = context.raw;
+            return `${label}: ${getCurrencySymbol()}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          }
+        }
+      }
+    }
+  };
+  
+  // Stacked chart options
+  const stackedChartOptions = {
+    ...chartOptions,
+    scales: {
+      ...chartOptions.scales,
+      x: {
+        ...chartOptions.scales.x,
+        stacked: true
+      },
+      y: {
+        ...chartOptions.scales.y,
+        stacked: true
+      }
+    }
+  };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 w-full">
-      {/* Left side - Input form */}
-      <div className="w-full lg:w-2/5 calculator-card text-white dark:text-gray-900 p-4 sm:p-6 rounded-lg">
-        <h3 className="text-xl font-bold mb-6">Loan Details</h3>
-        
-        <div className="mb-6">
-          <label className={labelClasses}>Currency:</label>
-          <div className="grid grid-cols-6 gap-1">
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '$' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('$')}
-            >
-              $
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '€' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('€')}
-            >
-              €
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '£' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('£')}
-            >
-              £
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '₹' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('₹')}
-            >
-              ₹
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '¥' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('¥')}
-            >
-              ¥
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded bg-muted hover:bg-muted/80`}
-            >
-              ...
-            </button>
+    <div className="bg-gray-800 text-white rounded-lg shadow-xl p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Input Section */}
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <h2 className="text-xl font-bold text-white mb-4">Car Loan Calculator</h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="currency" className="block text-sm font-medium text-gray-300 mb-1">
+                Currency
+              </label>
+              <select
+                id="currency"
+                value={selectedCurrency}
+                onChange={handleCurrencyChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {currencyOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label htmlFor="carPrice" className="block text-sm font-medium text-gray-300 mb-1">
+                Car Price
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
+                </div>
+                <input
+                  id="carPrice"
+                  type="tel"
+                  value={carPrice} {...numericInputProps}
+                  onChange={(e) => setCarPrice(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
           </div>
         </div>
           
-        <div className="mb-6">
-          <label className={labelClasses}>Loan Amount:</label>
-          <div className="flex">
-            <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-l">{currency}</span>
+            <div>
+              <label htmlFor="downPayment" className="block text-sm font-medium text-gray-300 mb-1">
+                Down Payment
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
+                </div>
             <input
+                  id="downPayment"
               type="tel"
-              value={loanAmountStr}
-              onChange={(e) => handleNumberInput(e.target.value, setLoanAmountStr)} {...decimalInputProps}
-              className={inputClasses}
-              placeholder="25000"
+                  value={downPayment} {...numericInputProps}
+                  onChange={(e) => setDownPayment(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
         
-        <div className="mb-6">
-          <label className={labelClasses}>Interest Rate:</label>
-          <div className="flex">
+            <div>
+              <label htmlFor="tradeInValue" className="block text-sm font-medium text-gray-300 mb-1">
+                Trade-In Value
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
+                </div>
             <input
+                  id="tradeInValue"
               type="tel"
-              value={interestRateStr}
-              onChange={(e) => handleNumberInput(e.target.value, setInterestRateStr)} {...decimalInputProps}
-              className={inputClasses}
-              placeholder="4.5"
-            />
-            <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-r">%</span>
+                  value={tradeInValue} {...numericInputProps}
+                  onChange={(e) => setTradeInValue(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
           </div>
         </div>
         
-        <div className="mb-6">
-          <label className={labelClasses}>Loan Term:</label>
-          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block mb-1 text-sm text-gray-400">Years</label>
+              <label htmlFor="loanTerm" className="block text-sm font-medium text-gray-300 mb-1">
+                Loan Term (years)
+              </label>
               <input
+                id="loanTerm"
                 type="tel"
-                value={yearsStr}
-                onChange={(e) => handleNumberInput(e.target.value, setYearsStr)} {...decimalInputProps}
-                className={inputClasses}
-                placeholder="5"
+                value={loanTerm} {...numericInputProps}
+                onChange={(e) => setLoanTerm(Number(e.target.value))}
+                min="1"
+                max="10"
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+            
             <div>
-              <label className="block mb-1 text-sm text-gray-400">Months</label>
+              <label htmlFor="interestRate" className="block text-sm font-medium text-gray-300 mb-1">
+                Interest Rate (% per year)
+              </label>
+              <div className="relative">
               <input
+                  id="interestRate"
                 type="tel"
-                value={monthsStr}
-                onChange={(e) => handleNumberInput(e.target.value, setMonthsStr)} {...decimalInputProps}
-                className={inputClasses}
-                placeholder="0"
-              />
+                  value={interestRate} {...numericInputProps}
+                  onChange={(e) => setInterestRate(Number(e.target.value))}
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">%</span>
             </div>
           </div>
         </div>
         
-        <div className="mb-6">
-          <label className={labelClasses}>Start Date:</label>
+            <div>
+              <label htmlFor="salesTaxRate" className="block text-sm font-medium text-gray-300 mb-1">
+                Sales Tax Rate (%)
+              </label>
+              <div className="relative">
           <input
-            type="date"
-            value={startDateStr}
-            onChange={(e) => setStartDateStr(e.target.value)}
-            className={inputClasses}
-          />
+                  id="salesTaxRate"
+                  type="tel"
+                  value={salesTaxRate} {...numericInputProps}
+                  onChange={(e) => setSalesTaxRate(Number(e.target.value))}
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">%</span>
         </div>
-        
-        <div className="mb-6">
-          <label className={labelClasses}>Additional Payment (Optional):</label>
-          <div className="flex">
-            <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-l">{currency}</span>
-            <input
-              type="tel"
-              value={additionalPaymentStr}
-              onChange={(e) => handleNumberInput(e.target.value, setAdditionalPaymentStr)} {...decimalInputProps}
-              className={inputClasses}
-              placeholder="0"
-            />
-            <select
-              value={additionalPaymentFrequency}
-              onChange={(e) => setAdditionalPaymentFrequency(e.target.value)}
-              className="bg-gray-100 dark:bg-gray-800 text-white dark:text-gray-900 py-2 px-4 rounded-r focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="monthly">monthly</option>
-              <option value="quarterly">quarterly</option>
-              <option value="annually">annually</option>
-            </select>
+          </div>
+        </div>
+          </div>
+          
+          <div className="mt-6 bg-gray-800 p-4 rounded-md border border-gray-700">
+            <h3 className="text-lg font-medium mb-3 text-blue-400">Loan Summary</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-400 text-sm">Loan Amount</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(loanAmount)}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Monthly Payment</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(monthlyPayment)}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Total Interest</p>
+                <p className="text-xl font-semibold text-red-400">{formatCurrency(totalInterest)}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Total Cost</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(totalCost)}</p>
+              </div>
+            </div>
           </div>
         </div>
         
-        <div className="mb-6">
-          <label className={labelClasses}>One-Time Payment (Optional):</label>
-          <div className="flex mb-2">
-            <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-l">{currency}</span>
-            <input
-              type="tel"
-              value={oneTimePaymentStr}
-              onChange={(e) => handleNumberInput(e.target.value, setOneTimePaymentStr)} {...decimalInputProps}
-              className={inputClasses}
-              placeholder="0"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <select
-              value={oneTimePaymentType}
-              onChange={(e) => setOneTimePaymentType(e.target.value)}
-              className="bg-gray-100 dark:bg-gray-800 text-white dark:text-gray-900 py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="balloon">Balloon payment</option>
-              <option value="at date">At specific date</option>
-            </select>
-            {oneTimePaymentType === 'at date' && (
-              <input
-                type="date"
-                value={oneTimePaymentDateStr}
-                onChange={(e) => setOneTimePaymentDateStr(e.target.value)}
-                className="bg-gray-100 dark:bg-gray-800 text-white dark:text-gray-900 py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            )}
-          </div>
-        </div>
-        
-        <button
-          onClick={calculateCarLoan}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-primary/90 text-white dark:text-gray-900 font-semibold rounded-md transition duration-200"
-        >
-          Calculate
-        </button>
-      </div>
-      
-      {/* Right side - Results */}
-      <div className="w-full lg:w-3/5 bg-white dark:bg-gray-800 text-white dark:text-gray-900 p-4 sm:p-6 rounded-lg">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold">Loan Summary</h3>
+        {/* Results Section */}
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">Loan Breakdown</h2>
           <div className="flex space-x-2">
             <button
-              onClick={() => setViewMode('table')}
-              className={`px-4 py-2 rounded ${
-                viewMode === 'table'
-                  ? 'bg-green-600 text-gray-900 dark:text-white-foreground'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
-              }`}
-            >
-              Table
-            </button>
-            <button
-              onClick={() => setViewMode('chart')}
-              className={`px-4 py-2 rounded ${
-                viewMode === 'chart'
-                  ? 'bg-blue-600 text-gray-900 dark:text-white-foreground'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
+                onClick={() => setViewType('chart')}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewType === 'chart' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
               Chart
             </button>
             <button
-              onClick={() => setViewMode('summary')}
-              className={`px-4 py-2 rounded ${
-                viewMode === 'summary'
-                  ? 'bg-orange-600 text-gray-900 dark:text-white-foreground'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
-              }`}
-            >
-              Summary
+                onClick={() => setViewType('table')}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewType === 'table' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                Table
             </button>
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="calculator-card-alt p-4 rounded">
-            <p className="text-gray-400 text-sm">Monthly Payment</p>
-            <p className="text-2xl font-bold">{formatCurrency(monthlyPayment)}</p>
+          {viewType === 'chart' && (
+            <div className="space-y-6">
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-medium text-blue-400">Payment Breakdown</h3>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setChartType('bar')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        chartType === 'bar' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      Payments
+                    </button>
+                    <button
+                      onClick={() => setChartType('line')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        chartType === 'line' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      Balance
+                    </button>
+                  </div>
+                </div>
+                <div className="h-80 w-full">
+                  {chartType === 'bar' ? (
+                    <Bar data={paymentChartData} options={stackedChartOptions} />
+                  ) : (
+                    <Line data={balanceChartData} options={chartOptions} />
+                  )}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Loan Details</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Car Price:</span>
+                      <span className="text-white">{formatCurrency(carPrice)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Sales Tax ({formatPercentage(salesTaxRate)}):</span>
+                      <span className="text-white">{formatCurrency((carPrice * salesTaxRate) / 100)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Down Payment:</span>
+                      <span className="text-white">{formatCurrency(downPayment)}</span>
           </div>
-          <div className="calculator-card-alt p-4 rounded">
-            <p className="text-gray-400 text-sm">Total Payments</p>
-            <p className="text-2xl font-bold">{formatCurrency(totalPayments)}</p>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Trade-In Value:</span>
+                      <span className="text-white">{formatCurrency(tradeInValue)}</span>
           </div>
-          <div className="calculator-card-alt p-4 rounded">
-            <p className="text-gray-400 text-sm">Total Interest</p>
-            <p className={resultValueClasses}>{formatCurrency(totalInterest)}</p>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Loan Amount:</span>
+                      <span className="text-white">{formatCurrency(loanAmount)}</span>
           </div>
-          <div className="calculator-card-alt p-4 rounded">
-            <p className="text-gray-400 text-sm">Payoff Date</p>
-            <p className="text-2xl font-bold">{formatDate(payoffDate)}</p>
           </div>
         </div>
         
-        {viewMode === 'table' && (
-          <div>
-            <div className="mb-4 flex justify-between items-center">
-              <button
-                onClick={() => setYearlyView(!yearlyView)}
-                className={`px-4 py-2 rounded ${
-                  yearlyView
-                    ? 'bg-green-600 text-gray-900 dark:text-white-foreground'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
-                }`}
-              >
-                {yearlyView ? 'Yearly View' : 'Monthly View'}
-              </button>
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Payment Details</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Monthly Payment:</span>
+                      <span className="text-white">{formatCurrency(monthlyPayment)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Total Payments:</span>
+                      <span className="text-white">{formatCurrency(monthlyPayment * loanTerm * 12)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Total Interest:</span>
+                      <span className="text-red-400">{formatCurrency(totalInterest)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Loan Term:</span>
+                      <span className="text-white">{loanTerm} years</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <div className="overflow-x-auto">
-              <table className="calculator-table">
+          )}
+          
+          {viewType === 'table' && (
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-x-auto">
+              <h3 className="text-lg font-medium text-blue-400 mb-4">Yearly Amortization Schedule</h3>
+              <table className="min-w-full divide-y divide-gray-700">
                 <thead>
                   <tr>
-                    <th className="calculator-table-header">
-                      {yearlyView ? 'Year' : 'Payment'}
-                    </th>
-                    <th className="calculator-table-header">
-                      Payment
-                    </th>
-                    <th className="calculator-table-header">
-                      Principal
-                    </th>
-                    <th className="calculator-table-header">
-                      Interest
-                    </th>
-                    <th className="calculator-table-header">
-                      Balance
-                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Year</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Payment</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Principal</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Interest</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Remaining Balance</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">
-                  {getCurrentSchedule().map((row, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-card' : 'bg-card'}>
-                      <td className="calculator-table-cell">
-                        {row.paymentNumber === 0 ? 'Initial' : yearlyView ? `Year ${row.paymentNumber}` : `${row.paymentNumber}`}
-                      </td>
-                      <td className="calculator-table-cell">
-                        {formatCurrency(row.payment)}
-                      </td>
-                      <td className="calculator-table-cell">
-                        {formatCurrency(row.principal)}
-                      </td>
-                      <td className="calculator-table-cell">
-                        {formatCurrency(row.interest)}
-                      </td>
-                      <td className="calculator-table-cell">
-                        {formatCurrency(row.remainingBalance)}
-                      </td>
+                  {yearlyPaymentData.map((data, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{data.year}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{formatCurrency(data.payment)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-blue-400">{formatCurrency(data.principal)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-red-400">{formatCurrency(data.interest)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{formatCurrency(data.balance)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-        )}
-        
-        {viewMode === 'chart' && (
-          <div>
-            <div className="mb-4 flex justify-between items-center">
-              <p className="text-gray-400 text-sm">Chart type:</p>
-              <div className="inline-flex rounded-md shadow-sm">
-                <button
-                  onClick={() => setChartType('line')}
-                  className={`relative inline-flex items-center px-4 py-2 rounded-l-md border ${
-                    chartType === 'line'
-                      ? 'bg-green-600 text-gray-900 dark:text-white-foreground border-green-600 z-10'
-                      : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                  } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-green-500`}
-                >
-                  Line
-                </button>
-                <button
-                  onClick={() => setChartType('bar')}
-                  className={`relative inline-flex items-center px-4 py-2 border-t border-b ${
-                    chartType === 'bar'
-                      ? 'bg-blue-600 text-gray-900 dark:text-white-foreground border-blue-600 z-10'
-                      : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                  } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                >
-                  Bar
-                </button>
-                <button
-                  onClick={() => setChartType('stacked')}
-                  className={`relative inline-flex items-center px-4 py-2 rounded-r-md border ${
-                    chartType === 'stacked'
-                      ? 'bg-orange-600 text-gray-900 dark:text-white-foreground border-orange-600 z-10'
-                      : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                  } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-orange-500`}
-                >
-                  Stacked
-                </button>
+              
+              <div className="mt-4 bg-gray-900 p-3 rounded-lg border border-gray-700">
+                <h4 className="text-md font-medium text-blue-400 mb-1">Car Loan Tips</h4>
+                <p className="text-sm text-gray-300">
+                  Consider making a larger down payment to reduce your monthly payments and total interest. 
+                  Shop around for the best interest rates, and remember that shorter loan terms typically have lower interest rates but higher monthly payments.
+                </p>
               </div>
             </div>
-            <div className="h-96">
-              <CarLoanChart 
-                data={amortizationSchedule} 
-                type={chartType} 
-                currency={currency} 
-              />
-            </div>
+          )}
           </div>
-        )}
-        
-        {viewMode === 'summary' && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
-            <p className="text-gray-400 mb-4">Summary of your car loan:</p>
-            <ul className="space-y-2">
-              <li>Loan amount: {formatCurrency(loanAmount)}</li>
-              <li>Interest rate: {interestRate}%</li>
-              <li>Loan term: {years} years {months > 0 ? `and ${months} months` : ''}</li>
-              <li>Start date: {formatDate(startDate)}</li>
-              
-              {parseFloat(additionalPaymentStr) > 0 && (
-                <>
-                  <li>Additional payment: {formatCurrency(additionalPayment)} ({additionalPaymentFrequency})</li>
-                </>
-              )}
-              
-              {parseFloat(oneTimePaymentStr) > 0 && (
-                <>
-                  <li>One-time payment: {formatCurrency(oneTimePayment)} ({oneTimePaymentType === 'balloon' ? 'balloon payment' : `on ${formatDate(oneTimePaymentDate)}`})</li>
-                </>
-              )}
-              
-              <li>Monthly payment: {formatCurrency(monthlyPayment)}</li>
-              <li>Total payments: {formatCurrency(totalPayments)}</li>
-              <li>Total interest: {formatCurrency(totalInterest)}</li>
-              <li>Payoff date: {formatDate(payoffDate)}</li>
-            </ul>
-          </div>
-        )}
       </div>
     </div>
   );

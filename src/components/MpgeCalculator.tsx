@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface MpgeCalculatorProps {
   calculator?: Calculator;
@@ -275,12 +275,12 @@ const MpgeCalculator: React.FC<MpgeCalculatorProps> = ({ calculator }) => {
           
           {/* MPGe Info - Only visible on desktop */}
           <div className="hidden md:block">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">About MPGe</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 MPGe (Miles Per Gallon equivalent) is a measure used by the EPA to compare the energy efficiency of electric and alternative fuel vehicles to conventional gasoline vehicles.
               </p>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 The EPA uses the equivalence of 33.7 kWh of electricity = 1 gallon of gasoline based on their energy content.
               </p>
             </div>
@@ -294,51 +294,51 @@ const MpgeCalculator: React.FC<MpgeCalculatorProps> = ({ calculator }) => {
           <div className="grid grid-cols-1 gap-4">
             {/* MPGe Result */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Miles Per Gallon Equivalent (MPGe)
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumberOneDec(results.mpge)} MPGe
               </div>
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Efficiency Rating: <span className="font-medium">{getEfficiencyRating(results.mpge)}</span>
               </div>
             </div>
             
             {/* L/100km Result */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Liters per 100 Kilometers Equivalent
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumberOneDec(results.lPer100Km)} L/100km
               </div>
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 European standard fuel economy measure
               </div>
             </div>
             
             {/* Conversion Summary */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Efficiency Summary
               </div>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">Miles per kWh</div>
-                  <div className={calculatorSectionHeaderClasses}>{formatNumber(results.milesPerKwh)}</div>
+                  <div className="calculator-section-header">{formatNumber(results.milesPerKwh)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">kWh per 100 miles</div>
-                  <div className={calculatorSectionHeaderClasses}>{formatNumber(results.kwhPer100Miles)}</div>
+                  <div className="calculator-section-header">{formatNumber(results.kwhPer100Miles)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">Kilometers per kWh</div>
-                  <div className={calculatorSectionHeaderClasses}>{formatNumber(results.kmPerKwh)}</div>
+                  <div className="calculator-section-header">{formatNumber(results.kmPerKwh)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">kWh per 100 km</div>
-                  <div className={calculatorSectionHeaderClasses}>{formatNumber(results.kwhPer100Km)}</div>
+                  <div className="calculator-section-header">{formatNumber(results.kwhPer100Km)}</div>
                 </div>
               </div>
             </div>
@@ -346,12 +346,12 @@ const MpgeCalculator: React.FC<MpgeCalculatorProps> = ({ calculator }) => {
           
           {/* MPGe Info - Only visible on mobile */}
           <div className="block md:hidden">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">About MPGe</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 MPGe (Miles Per Gallon equivalent) is a measure used by the EPA to compare the energy efficiency of electric and alternative fuel vehicles to conventional gasoline vehicles.
               </p>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 The EPA uses the equivalence of 33.7 kWh of electricity = 1 gallon of gasoline based on their energy content.
               </p>
             </div>

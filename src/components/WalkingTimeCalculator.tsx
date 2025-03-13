@@ -5,7 +5,7 @@ import { Calculator } from '@/data/calculators';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, BarElement } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
@@ -462,11 +462,11 @@ const WalkingTimeCalculator: React.FC<WalkingTimeCalculatorProps> = ({ calculato
       <h2 className="calculator-section-header">Results</h2>
           
           {/* Walking Time Result */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Estimated Walking Time
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {formatTime(walkingTime.minutes, walkingTime.seconds)}
             </div>
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
@@ -476,7 +476,7 @@ const WalkingTimeCalculator: React.FC<WalkingTimeCalculatorProps> = ({ calculato
           
           {/* Adjusted Pace */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Adjusted Walking Pace
             </div>
             <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -489,7 +489,7 @@ const WalkingTimeCalculator: React.FC<WalkingTimeCalculatorProps> = ({ calculato
           
           {/* Calories Burned */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Estimated Calories Burned
             </div>
             <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -511,7 +511,7 @@ const WalkingTimeCalculator: React.FC<WalkingTimeCalculatorProps> = ({ calculato
           {/* Tips */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Walking Tips</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li>• Maintain good posture with your head up and shoulders relaxed</li>
               <li>• Take shorter, quicker steps to increase your pace</li>
               <li>• Swing your arms naturally to help maintain balance and rhythm</li>

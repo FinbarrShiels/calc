@@ -13,7 +13,7 @@ import {
 } from 'chart.js';
 import { convertCurrency, formatCurrency as formatCurrencyUtil, getCurrencySymbol } from '@/utils/currencyUtils';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 // Register ChartJS components
 ChartJS.register(
@@ -400,7 +400,7 @@ const MillionToBillionConverter = () => {
             <div className="mb-4">
               <label className="block text-gray-300 mb-2">Conversion Type</label>
               <select 
-                className={inputClasses}
+                className="calculator-input"
                 value={conversionType}
                 onChange={(e) => setConversionType(e.target.value)}
               >
@@ -416,7 +416,7 @@ const MillionToBillionConverter = () => {
             <div className="mb-4">
               <label className="block text-gray-300 mb-2">Currency</label>
               <select 
-                className={inputClasses}
+                className="calculator-input"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
               >
@@ -477,7 +477,7 @@ const MillionToBillionConverter = () => {
                 <div className="text-gray-400 mb-2">
                   {formatLargeNumber(parseFloat(amountStr) || 0, units.input)} equals
                 </div>
-                <div className={resultValueClasses}>
+                <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                   {formatLargeNumber(convertedAmount, units.output)}
                 </div>
                 <div className="text-gray-400">
@@ -550,7 +550,7 @@ const MillionToBillionConverter = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className={calculatorSectionHeaderClasses}>Million</h3>
+              <h3 className="calculator-section-header">Million</h3>
               <p>
                 1 million = 1,000,000
               </p>
@@ -560,7 +560,7 @@ const MillionToBillionConverter = () => {
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className={calculatorSectionHeaderClasses}>Billion</h3>
+              <h3 className="calculator-section-header">Billion</h3>
               <p>
                 1 billion = 1,000,000,000 = 1,000 million
               </p>
@@ -570,7 +570,7 @@ const MillionToBillionConverter = () => {
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className={calculatorSectionHeaderClasses}>Trillion</h3>
+              <h3 className="calculator-section-header">Trillion</h3>
               <p>
                 1 trillion = 1,000,000,000,000 = 1,000 billion = 1,000,000 million
               </p>

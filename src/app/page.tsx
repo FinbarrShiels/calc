@@ -191,7 +191,7 @@ export default function HomePage() {
                   </li>
                 )}
               </ul>
-            </div>
+      </div>
           )}
         </div>
         
@@ -242,7 +242,7 @@ export default function HomePage() {
                 </p>
               </Link>
             </div>
-          </div>
+        </div>
           
           {/* Right column - 300px with green background */}
           <div className="w-full md:w-[300px] bg-green-100 dark:bg-green-800 rounded-lg mt-8 md:mt-0 p-6">
@@ -252,7 +252,7 @@ export default function HomePage() {
             </p>
           </div>
         </div>
-      </div>
+        </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 const GallonsToPoundsCalculator: React.FC = () => {
   // Input state
@@ -81,14 +81,14 @@ const GallonsToPoundsCalculator: React.FC = () => {
   };
   
   return (
-    <div className={inputClasses}>
+    <div className="calculator-input">
       <div className="max-w-4xl mx-auto p-4">
         <h1 className="text-3xl font-bold mb-2 text-white dark:text-gray-900">Gallons to Pounds Calculator</h1>
         <p className="text-gray-300 mb-6">Convert gallons to pounds with precision. Perfect for shipping, transportation, and weight calculations.</p>
         
         <div className="calculator-card-alt rounded-lg shadow-xl overflow-hidden">
           <div className="p-6">
-            <h2 className={calculatorSectionHeaderClasses}>Gallons to Pounds Calculator</h2>
+            <h2 className="calculator-section-header">Gallons to Pounds Calculator</h2>
             
             <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
               <div className="mb-4">
@@ -101,7 +101,7 @@ const GallonsToPoundsCalculator: React.FC = () => {
                     type="tel"
                     value={gallonsStr}
                     onChange={(e) => handleNumberInput(e, setGallonsStr)} {...decimalInputProps}
-                    className={inputClasses}
+                    className="calculator-input"
                     placeholder="Enter volume in gallons"
                   />
                   <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">gal</span>
@@ -114,7 +114,7 @@ const GallonsToPoundsCalculator: React.FC = () => {
                 </label>
                 <select
                   id="liquid"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={liquidType}
                   onChange={handleLiquidChange}
                 >
@@ -135,7 +135,7 @@ const GallonsToPoundsCalculator: React.FC = () => {
                 </label>
                 <select
                   id="precision"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={precision}
                   onChange={handlePrecisionChange}
                 >
@@ -149,39 +149,39 @@ const GallonsToPoundsCalculator: React.FC = () => {
             </div>
             
             <div className="calculator-card-alt p-6 rounded-lg shadow-lg">
-              <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+              <h3 className="calculator-section-header">Conversion Results</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                  <div className={resultLabelClasses}>Gallons</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Gallons</div>
                   <div className="text-xl sm:text-2xl font-bold text-green-400">
                     {gallonsStr === '' ? '0' : parseFloat(gallonsStr).toLocaleString()} gal
                   </div>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                  <div className={resultLabelClasses}>Weight in Pounds</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Weight in Pounds</div>
                   <div className="text-xl sm:text-2xl font-bold text-blue-400">
                     {pounds !== null ? pounds.toFixed(precision) : '0'} lb
                   </div>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                  <div className={resultLabelClasses}>Liquid</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Liquid</div>
                   <div className="text-xl sm:text-2xl font-bold text-purple-400">
                     {liquidType.charAt(0).toUpperCase() + liquidType.slice(1)}
                   </div>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                  <div className={resultLabelClasses}>Density</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Density</div>
                   <div className="text-xl sm:text-2xl font-bold text-yellow-400">
                     {liquidDensities[liquidType]} lb/gal
                   </div>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-                  <div className={resultLabelClasses}>Conversion Formula</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
                   <div className="text-md font-medium text-gray-300 mt-1">
                     {gallonsStr === '' ? '0' : gallonsStr} gallons × {liquidDensities[liquidType]} lb/gal = {pounds !== null ? pounds.toFixed(precision) : '0'} pounds
                   </div>
@@ -190,7 +190,7 @@ const GallonsToPoundsCalculator: React.FC = () => {
             </div>
             
             <div className="mt-8 calculator-card-alt p-6 rounded-lg shadow-lg">
-              <h3 className={calculatorSectionHeaderClasses}>Liquid Densities</h3>
+              <h3 className="calculator-section-header">Liquid Densities</h3>
               
               <div className="overflow-x-auto">
                 <table className="calculator-table">

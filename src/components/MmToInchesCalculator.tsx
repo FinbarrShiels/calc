@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface MmToInchesCalculatorProps {
   calculator?: Calculator;
@@ -115,7 +115,7 @@ const MmToInchesCalculator: React.FC<MmToInchesCalculatorProps> = ({ calculator 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
       <div className="p-6">
-        <h2 className={calculatorSectionHeaderClasses}>Millimeters to Inches Calculator</h2>
+        <h2 className="calculator-section-header">Millimeters to Inches Calculator</h2>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
           <div className="grid grid-cols-1 gap-4 mb-4">
@@ -127,7 +127,7 @@ const MmToInchesCalculator: React.FC<MmToInchesCalculatorProps> = ({ calculator 
                 <input
                   type="tel"
                   id="mm"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={mmStr} {...numericInputProps}
                   onChange={handleMmChange}
                 />
@@ -142,7 +142,7 @@ const MmToInchesCalculator: React.FC<MmToInchesCalculatorProps> = ({ calculator 
             </label>
             <select
               id="precision"
-              className={inputClasses}
+              className="calculator-input"
               value={precision}
               onChange={handlePrecisionChange}
             >
@@ -156,32 +156,32 @@ const MmToInchesCalculator: React.FC<MmToInchesCalculatorProps> = ({ calculator 
         </div>
         
         <div className="calculator-card p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+          <h3 className="calculator-section-header">Conversion Results</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Millimeters</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Millimeters</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">
                 {mmStr === '' ? '0' : parseFloat(mmStr).toLocaleString()} mm
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Decimal Inches</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Decimal Inches</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">
                 {inches.toFixed(precision)} in
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Fractional Inches</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Fractional Inches</div>
               <div className="text-xl sm:text-2xl font-bold text-orange-400">
                 {fractionalInches} in
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-              <div className={resultLabelClasses}>Conversion Formula</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
               <div className="text-md font-medium text-gray-300 mt-1">
                 {mmStr === '' ? '0' : parseFloat(mmStr).toLocaleString()} millimeters × 0.0393701 = {inches.toFixed(precision)} inches
               </div>
@@ -190,7 +190,7 @@ const MmToInchesCalculator: React.FC<MmToInchesCalculatorProps> = ({ calculator 
         </div>
         
         <div className="mt-8 calculator-card p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Common Conversions</h3>
+          <h3 className="calculator-section-header">Common Conversions</h3>
           
           <div className="overflow-x-auto">
             <table className="calculator-table">

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface MulchCalculatorProps {
   calculator?: Calculator;
@@ -302,12 +302,12 @@ const MulchCalculator: React.FC<MulchCalculatorProps> = ({ calculator }) => {
           
           {/* Mulch Info - Only visible on desktop */}
           <div className="hidden md:block">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Mulch Information</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Mulch is typically applied at a depth of 2-4 inches (5-10 cm) for best results:
               </p>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Too shallow:</strong> Less than 2 inches may not provide adequate weed control</li>
                 <li><strong>Too deep:</strong> More than 4 inches can prevent water from reaching plant roots</li>
                 <li><strong>Standard bags:</strong> Typically contain 2 cubic feet of mulch</li>
@@ -323,40 +323,40 @@ const MulchCalculator: React.FC<MulchCalculatorProps> = ({ calculator }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Volume in Cubic Yards */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Volume (Cubic Yards)
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(volumeCubicYards)} yd³
               </div>
             </div>
             
             {/* Volume in Cubic Feet */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Volume (Cubic Feet)
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(volumeCubicFeet)} ft³
               </div>
             </div>
             
             {/* Volume in Cubic Meters */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Volume (Cubic Meters)
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(volumeCubicMeters)} m³
               </div>
             </div>
             
             {/* Bags Needed */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Standard Bags Needed
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatWholeNumber(bagsNeeded)} bags
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">
@@ -367,12 +367,12 @@ const MulchCalculator: React.FC<MulchCalculatorProps> = ({ calculator }) => {
           
           {/* Mulch Info - Only visible on mobile */}
           <div className="block md:hidden">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Mulch Information</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Mulch is typically applied at a depth of 2-4 inches (5-10 cm) for best results:
               </p>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Too shallow:</strong> Less than 2 inches may not provide adequate weed control</li>
                 <li><strong>Too deep:</strong> More than 4 inches can prevent water from reaching plant roots</li>
                 <li><strong>Standard bags:</strong> Typically contain 2 cubic feet of mulch</li>
@@ -383,7 +383,7 @@ const MulchCalculator: React.FC<MulchCalculatorProps> = ({ calculator }) => {
           {/* Mulch Tips */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Mulch Tips</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li><strong>New beds:</strong> Apply 3-4 inches of mulch</li>
               <li><strong>Maintenance:</strong> Add 1-2 inches annually as needed</li>
               <li><strong>Around trees:</strong> Keep mulch 2-3 inches away from trunks</li>

@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Calculator } from '@/data/calculators';
-import { Chart } from 'chart.js/auto';
+import { Chart, ChartConfiguration } from 'chart.js/auto';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
 
 interface SavingsCalculatorProps {
   calculator?: Calculator;
@@ -177,7 +176,7 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
   
   // Create balance chart
   const createBalanceChart = () => {
-    if (!balanceChartRef.current || savingsData.length === 0) return;
+    if (!balanceChartRef.current) return;
     
     const ctx = balanceChartRef.current.getContext('2d');
     if (!ctx) return;
@@ -186,13 +185,8 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
       balanceChartInstance.current.destroy();
     }
     
-    // Filter data to show fewer points for better visualization
-    const filterStep = Math.max(1, Math.floor(savingsData.length / 24));
-    const filteredData = savingsData.filter((_, index) => index % filterStep === 0 || index === savingsData.length - 1);
-    
-    const labels = filteredData.map(data => `Month ${data.month}`);
-    const balanceData = filteredData.map(data => data.balance);
-    const depositsData = filteredData.map(data => data.totalDeposits);
+    const labels = savingsData.map(data => `Month ${data.month}`);
+    const balanceData = savingsData.map(data => data.balance);
     
     const currencySymbol = getCurrencySymbol();
     
@@ -204,17 +198,10 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
           {
             label: 'Balance',
             data: balanceData,
-            backgroundColor: chartType === 'line' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.7)',
-            borderColor: 'rgb(34, 197, 94)', // green-500
-            borderWidth: 2,
-            tension: 0.1
-          },
-          {
-            label: 'Total Deposits',
-            data: depositsData,
-            backgroundColor: chartType === 'line' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.7)',
-            borderColor: 'rgb(59, 130, 246)', // blue-500
-            borderWidth: 2,
+            backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
+            borderColor: '#3b82f6', // blue-500
+            borderWidth: 1,
+            fill: chartType === 'line',
             tension: 0.1
           }
         ]
@@ -222,59 +209,49 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(100, 100, 100, 0.2)'
-            },
-            ticks: {
-              color: 'rgb(200, 200, 200)',
-              callback: function(value) {
-                return currencySymbol + value.toLocaleString();
-              }
-            },
-            title: {
-              display: true,
-              text: 'Amount',
-              color: 'rgb(200, 200, 200)'
-            }
-          },
-          x: {
-            grid: {
-              color: 'rgba(100, 100, 100, 0.2)'
-            },
-            ticks: {
-              color: 'rgb(200, 200, 200)',
-              maxRotation: 45,
-              minRotation: 45,
-              autoSkip: true,
-              maxTicksLimit: 12
-            },
-            title: {
-              display: true,
-              text: 'Time',
-              color: 'rgb(200, 200, 200)'
-            }
-          }
-        },
         plugins: {
           legend: {
+            position: 'top',
             labels: {
-              color: 'rgb(200, 200, 200)'
+              color: '#e5e7eb', // text-gray-200
+              font: {
+                size: 12
+              }
             }
           },
           tooltip: {
+            backgroundColor: 'rgba(17, 24, 39, 0.9)', // bg-gray-900 with opacity
+            titleColor: '#f9fafb', // text-gray-50
+            bodyColor: '#f3f4f6', // text-gray-100
+            padding: 10,
+            borderColor: 'rgba(75, 85, 99, 0.3)', // gray-600 with opacity
+            borderWidth: 1,
             callbacks: {
               label: function(context) {
-                let label = context.dataset.label || '';
-                if (label) {
-                  label += ': ';
-                }
-                if (context.parsed.y !== null) {
-                  label += currencySymbol + context.parsed.y.toLocaleString();
-                }
-                return label;
+                const rawValue = context.raw as number;
+                return `Balance: ${currencySymbol}${rawValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+              callback: function(value) {
+                return currencySymbol + value.toLocaleString();
               }
             }
           }
@@ -285,7 +262,7 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
   
   // Create breakdown chart
   const createBreakdownChart = () => {
-    if (!breakdownChartRef.current || savingsData.length === 0) return;
+    if (!breakdownChartRef.current) return;
     
     const ctx = breakdownChartRef.current.getContext('2d');
     if (!ctx) return;
@@ -294,24 +271,32 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
       breakdownChartInstance.current.destroy();
     }
     
-    const lastMonthData = savingsData[savingsData.length - 1];
+    const labels = savingsData.map(data => `Month ${data.month}`);
+    const depositData = savingsData.map(data => data.totalDeposits);
+    const interestData = savingsData.map(data => data.totalInterest);
+    
+    const currencySymbol = getCurrencySymbol();
     
     breakdownChartInstance.current = new Chart(ctx, {
-      type: 'pie',
+      type: 'bar',
       data: {
-        labels: ['Total Deposits', 'Total Interest'],
+        labels,
         datasets: [
           {
-            data: [lastMonthData.totalDeposits, lastMonthData.totalInterest],
-            backgroundColor: [
-              'rgba(59, 130, 246, 0.7)', // blue-500
-              'rgba(249, 115, 22, 0.7)', // orange-500
-            ],
-            borderColor: [
-              'rgb(59, 130, 246)',
-              'rgb(249, 115, 22)',
-            ],
-            borderWidth: 1
+            label: 'Deposits',
+            data: depositData,
+            backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
+            borderColor: '#3b82f6', // blue-500
+            borderWidth: 1,
+            stack: 'Stack 0'
+          },
+          {
+            label: 'Interest',
+            data: interestData,
+            backgroundColor: 'rgba(16, 185, 129, 0.5)', // green-500 with opacity
+            borderColor: '#10b981', // green-500
+            borderWidth: 1,
+            stack: 'Stack 0'
           }
         ]
       },
@@ -320,19 +305,54 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'bottom',
+            position: 'top',
             labels: {
-              color: 'rgb(200, 200, 200)'
+              color: '#e5e7eb', // text-gray-200
+              font: {
+                size: 12
+              }
             }
           },
           tooltip: {
+            backgroundColor: 'rgba(17, 24, 39, 0.9)', // bg-gray-900 with opacity
+            titleColor: '#f9fafb', // text-gray-50
+            bodyColor: '#f3f4f6', // text-gray-100
+            padding: 10,
+            borderColor: 'rgba(75, 85, 99, 0.3)', // gray-600 with opacity
+            borderWidth: 1,
             callbacks: {
               label: function(context) {
-                const label = context.label || '';
-                const value = context.raw;
-                const total = context.dataset.data.reduce((a, b) => (a as number) + (b as number), 0);
-                const percentage = Math.round(((value as number) / (total as number)) * 100);
-                return `${label}: ${getCurrencySymbol()}${(value as number).toLocaleString()} (${percentage}%)`;
+                const dataValue = context.raw as number;
+                const label = context.dataset.label || '';
+                return `${label}: ${currencySymbol}${dataValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              },
+              footer: function(tooltipItems) {
+                const total = tooltipItems.reduce((sum, item) => sum + (item.raw as number), 0);
+                return `Total: ${currencySymbol}${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+            }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+            },
+            ticks: {
+              color: '#e5e7eb', // text-gray-200
+              callback: function(value) {
+                return currencySymbol + value.toLocaleString();
               }
             }
           }
@@ -350,11 +370,11 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
   };
   
   return (
-    <div className="bg-white dark:bg-gray-800 text-white dark:text-gray-900 rounded-lg shadow-xl p-6">
+    <div className="bg-gray-800 text-white rounded-lg shadow-xl p-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Input Section */}
-        <div className="calculator-card-alt rounded-lg p-5">
-          <h2 className={calculatorSectionHeaderClasses}>Savings Calculator Inputs</h2>
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <h2 className="text-xl font-bold text-white mb-4">Savings Calculator Inputs</h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -365,7 +385,7 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
                 id="currency"
                 value={selectedCurrency}
                 onChange={handleCurrencyChange}
-                className={inputClasses}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {currencyOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -389,7 +409,7 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
                   value={initialDeposit} {...numericInputProps}
                   onChange={(e) => setInitialDeposit(Number(e.target.value))}
                   min="0"
-                  className={inputClasses}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -408,7 +428,7 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
                   value={monthlyContribution} {...numericInputProps}
                   onChange={(e) => setMonthlyContribution(Number(e.target.value))}
                   min="0"
-                  className={inputClasses}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -426,7 +446,7 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
                   min="0"
                   max="100"
                   step="0.1"
-                  className={inputClasses}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <span className="text-gray-400">%</span>
@@ -445,7 +465,7 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
                 onChange={(e) => setSavingsPeriod(Number(e.target.value))}
                 min="1"
                 max="50"
-                className={inputClasses}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
@@ -457,7 +477,7 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
                 id="compoundFrequency"
                 value={compoundFrequency}
                 onChange={handleCompoundFrequencyChange}
-                className={inputClasses}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="daily">Daily</option>
                 <option value="monthly">Monthly</option>
@@ -467,24 +487,24 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
             </div>
           </div>
           
-          <div className="mt-6 bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+          <div className="mt-6 bg-gray-800 p-4 rounded-md border border-gray-700">
             <h3 className="text-lg font-medium mb-3 text-blue-400">Savings Summary</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-gray-400 text-sm">Final Balance</p>
-                <p className={calculatorSectionHeaderClasses}>{formatCurrency(finalBalance)}</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(finalBalance)}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Total Deposits</p>
-                <p className={calculatorSectionHeaderClasses}>{formatCurrency(totalDeposits)}</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(totalDeposits)}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Total Interest Earned</p>
-                <p className={calculatorSectionHeaderClasses}>{formatCurrency(totalInterest)}</p>
+                <p className="text-xl font-semibold text-green-400">{formatCurrency(totalInterest)}</p>
               </div>
               <div>
                 <p className="text-gray-400 text-sm">Interest to Deposit Ratio</p>
-                <p className="text-xl font-semibold">
+                <p className="text-xl font-semibold text-white">
                   {totalDeposits > 0 ? `${(totalInterest / totalDeposits * 100).toFixed(2)}%` : '0%'}
                 </p>
               </div>
@@ -493,26 +513,26 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
         </div>
         
         {/* Results Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-5">
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
           <div className="flex justify-between items-center mb-4">
-            <h2 className={calculatorSectionHeaderClasses}>Results</h2>
+            <h2 className="text-xl font-bold text-white">Results</h2>
             <div className="flex space-x-2">
               <button
                 onClick={() => setViewType('chart')}
-                className={`px-3 py-1 rounded-md text-sm ${
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
                   viewType === 'chart' 
-                    ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' 
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
                 Chart
               </button>
               <button
                 onClick={() => setViewType('table')}
-                className={`px-3 py-1 rounded-md text-sm ${
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
                   viewType === 'table' 
-                    ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' 
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
                 Table
@@ -522,40 +542,40 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
           
           {viewType === 'chart' && (
             <div className="space-y-6">
-              <div>
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-lg font-medium text-green-400">Savings Growth</h3>
+                  <h3 className="text-lg font-medium text-blue-400">Savings Growth</h3>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => setChartType('line')}
-                      className={`px-2 py-1 rounded-md text-xs ${
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
                         chartType === 'line' 
-                          ? 'bg-green-600 text-gray-900 dark:text-white-foreground' 
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
                       Line
                     </button>
                     <button
                       onClick={() => setChartType('bar')}
-                      className={`px-2 py-1 rounded-md text-xs ${
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
                         chartType === 'bar' 
-                          ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' 
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-300 hover:bg-gray-100 dark:bg-gray-850/80'
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
                       Bar
                     </button>
                   </div>
                 </div>
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-4" style={{ height: '300px' }}>
+                <div className="h-80 w-full">
                   <canvas ref={balanceChartRef}></canvas>
                 </div>
               </div>
               
-              <div>
-                <h3 className="text-lg font-medium mb-2 text-orange-400">Deposits vs. Interest</h3>
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-md p-4" style={{ height: '250px' }}>
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                <h3 className="text-lg font-medium text-blue-400 mb-2">Savings Breakdown</h3>
+                <div className="h-80 w-full">
                   <canvas ref={breakdownChartRef}></canvas>
                 </div>
               </div>
@@ -563,45 +583,32 @@ const SavingsCalculator: React.FC<SavingsCalculatorProps> = ({ calculator }) => 
           )}
           
           {viewType === 'table' && (
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
-              <div className="max-h-[550px] overflow-y-auto">
-                <table className="calculator-table">
-                  <thead className={secondaryButtonClasses}>
-                    <tr>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Month
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Deposit
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Interest
-                      </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                        Balance
-                      </th>
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-x-auto">
+              <h3 className="text-lg font-medium text-blue-400 mb-4">Savings Details</h3>
+              <table className="min-w-full divide-y divide-gray-700">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Month</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Deposit</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Interest</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Balance</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total Deposits</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total Interest</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {savingsData.map((data, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{data.month}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{formatCurrency(data.deposit)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-green-400">{formatCurrency(data.interest)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-blue-400">{formatCurrency(data.balance)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{formatCurrency(data.totalDeposits)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-green-400">{formatCurrency(data.totalInterest)}</td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-gray-100 dark:bg-gray-800 divide-y divide-gray-600">
-                    {savingsData.map((data, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-muted' : 'bg-gray-650'}>
-                        <td className="calculator-table-cell">
-                          {data.month}
-                        </td>
-                        <td className="calculator-table-cell">
-                          {formatCurrency(data.deposit)}
-                        </td>
-                        <td className="calculator-table-cell">
-                          {formatCurrency(data.interest)}
-                        </td>
-                        <td className="calculator-table-cell">
-                          {formatCurrency(data.balance)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

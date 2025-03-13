@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface OvenTemperatureConverterProps {
   calculator?: Calculator;
@@ -218,9 +218,9 @@ const OvenTemperatureConverter: React.FC<OvenTemperatureConverterProps> = ({ cal
           </div>
           
           {/* Conversion Explanation */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Temperature Scale Tips</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li>• Fahrenheit (°F): Standard in US recipes</li>
               <li>• Celsius (°C): Standard in most countries</li>
               <li>• Celsius Fan (°C): For fan-assisted/convection ovens</li>
@@ -235,8 +235,8 @@ const OvenTemperatureConverter: React.FC<OvenTemperatureConverterProps> = ({ cal
       <h2 className="calculator-section-header">Conversion Results</h2>
           
           {/* Temperature Description */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Temperature Description
             </div>
             <div className="text-lg font-medium text-gray-900 dark:text-white dark:text-blue-400">
@@ -248,7 +248,7 @@ const OvenTemperatureConverter: React.FC<OvenTemperatureConverterProps> = ({ cal
           <div className="grid grid-cols-2 gap-4">
             {/* Fahrenheit Result */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Fahrenheit
               </div>
               <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -258,7 +258,7 @@ const OvenTemperatureConverter: React.FC<OvenTemperatureConverterProps> = ({ cal
             
             {/* Celsius Result */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Celsius
               </div>
               <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -268,7 +268,7 @@ const OvenTemperatureConverter: React.FC<OvenTemperatureConverterProps> = ({ cal
             
             {/* Celsius Fan Result */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Celsius (Fan)
               </div>
               <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -281,7 +281,7 @@ const OvenTemperatureConverter: React.FC<OvenTemperatureConverterProps> = ({ cal
             
             {/* Gas Mark Result */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Gas Mark
               </div>
               <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -327,7 +327,7 @@ const OvenTemperatureConverter: React.FC<OvenTemperatureConverterProps> = ({ cal
           {/* Oven Tips */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Oven Tips</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li>• Always preheat your oven for at least 10-15 minutes</li>
               <li>• Use an oven thermometer for accurate temperature readings</li>
               <li>• Reduce temperature by 25°F when using dark pans</li>

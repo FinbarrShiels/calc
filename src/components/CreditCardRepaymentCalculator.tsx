@@ -14,7 +14,7 @@ import {
   Legend,
 } from 'chart.js';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 // Register ChartJS components
 ChartJS.register(
@@ -359,7 +359,7 @@ const CreditCardRepaymentCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Currency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
@@ -378,7 +378,7 @@ const CreditCardRepaymentCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={currentBalanceStr}
                 onChange={(e) => handleNumberInput(e.target.value, setCurrentBalanceStr)} {...decimalInputProps}
               />
@@ -390,7 +390,7 @@ const CreditCardRepaymentCalculator = () => {
             <div className="relative">
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={interestRateStr}
                 onChange={(e) => handleNumberInput(e.target.value, setInterestRateStr)} {...decimalInputProps}
               />
@@ -403,7 +403,7 @@ const CreditCardRepaymentCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Minimum Payment Type</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={minPaymentTypeStr}
               onChange={(e) => setMinPaymentTypeStr(e.target.value)}
             >
@@ -418,7 +418,7 @@ const CreditCardRepaymentCalculator = () => {
               <div className="relative">
                 <input
                   type="tel"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={minPaymentPercentStr}
                   onChange={(e) => handleNumberInput(e.target.value, setMinPaymentPercentStr)} {...decimalInputProps}
                 />
@@ -433,7 +433,7 @@ const CreditCardRepaymentCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={minPaymentAmountStr}
                 onChange={(e) => handleNumberInput(e.target.value, setMinPaymentAmountStr)} {...decimalInputProps}
               />
@@ -445,7 +445,7 @@ const CreditCardRepaymentCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Payment Strategy</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={paymentStrategy}
               onChange={(e) => setPaymentStrategy(e.target.value)}
             >
@@ -466,7 +466,7 @@ const CreditCardRepaymentCalculator = () => {
                 <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
                 <input
                   type="tel"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={additionalPaymentStr}
                   onChange={(e) => handleNumberInput(e.target.value, setAdditionalPaymentStr)} {...decimalInputProps}
                 />
@@ -479,7 +479,7 @@ const CreditCardRepaymentCalculator = () => {
               <label className="block text-gray-300 mb-2">Months to Pay Off</label>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={targetMonthsStr}
                 onChange={(e) => handleNumberInput(e.target.value, setTargetMonthsStr)} {...decimalInputProps}
               />
@@ -493,7 +493,7 @@ const CreditCardRepaymentCalculator = () => {
                 <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
                 <input
                   type="tel"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={targetAmountStr}
                   onChange={(e) => handleNumberInput(e.target.value, setTargetAmountStr)} {...decimalInputProps}
                 />
@@ -509,22 +509,22 @@ const CreditCardRepaymentCalculator = () => {
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Monthly Payment</h3>
-              <p className={resultValueClasses}>{formatCurrency(monthlyPayment)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(monthlyPayment)}</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Months to Pay Off</h3>
-              <p className={resultValueClasses}>{monthsToPayoff}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{monthsToPayoff}</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Total Interest</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalInterest)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalInterest)}</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Total Payments</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalPayments)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalPayments)}</p>
             </div>
           </div>
           

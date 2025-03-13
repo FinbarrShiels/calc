@@ -12,7 +12,7 @@ import {
   Legend,
 } from 'chart.js';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 // Register ChartJS components
 ChartJS.register(
@@ -314,7 +314,7 @@ const CurrencyConverterCalculator = () => {
             <div className="relative">
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={amountStr}
                 onChange={(e) => handleNumberInput(e.target.value, setAmountStr)} {...decimalInputProps}
                 placeholder="Enter amount"
@@ -326,7 +326,7 @@ const CurrencyConverterCalculator = () => {
             <div className="col-span-2">
               <label className="block text-gray-300 mb-2">From</label>
               <select 
-                className={inputClasses}
+                className="calculator-input"
                 value={fromCurrency}
                 onChange={(e) => setFromCurrency(e.target.value)}
               >
@@ -353,7 +353,7 @@ const CurrencyConverterCalculator = () => {
             <div className="col-span-2">
               <label className="block text-gray-300 mb-2">To</label>
               <select 
-                className={inputClasses}
+                className="calculator-input"
                 value={toCurrency}
                 onChange={(e) => setToCurrency(e.target.value)}
               >
@@ -368,7 +368,7 @@ const CurrencyConverterCalculator = () => {
           
           <div className="mb-6">
             <button
-              className={inputClasses}
+              className="calculator-input"
               onClick={convertCurrency}
               disabled={isLoading}
             >
@@ -390,11 +390,11 @@ const CurrencyConverterCalculator = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-gray-300">{formatCurrency(result.amount, result.fromCurrency)} {result.fromCurrency}</p>
-                        <p className={resultLabelClasses}>= {formatCurrency(result.convertedAmount, result.toCurrency)} {result.toCurrency}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">= {formatCurrency(result.convertedAmount, result.toCurrency)} {result.toCurrency}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-gray-300">1 {result.fromCurrency} = {result.rate.toFixed(4)} {result.toCurrency}</p>
-                        <p className={resultLabelClasses}>{result.date}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">{result.date}</p>
                       </div>
                     </div>
                   </div>
@@ -407,7 +407,7 @@ const CurrencyConverterCalculator = () => {
         {/* Results */}
         <div className="calculator-card rounded-lg p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className={resultValueClasses}>Exchange Rate Trends</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">Exchange Rate Trends</h2>
             <div className="flex space-x-2">
               <button
                 className={`px-3 py-1 rounded ${viewMode === 'converter' ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' : 'bg-gray-100 dark:bg-gray-800 text-gray-300'}`}
@@ -431,7 +431,7 @@ const CurrencyConverterCalculator = () => {
                   <p className="text-gray-400 text-sm">
                     {getCurrencyName(fromCurrency)} to {getCurrencyName(toCurrency)}
                   </p>
-                  <h3 className={resultValueClasses}>
+                  <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                     {formatCurrency(conversionResults[0].amount, fromCurrency)}
                   </h3>
                   <div className="flex items-center justify-center text-gray-400 mb-4">
@@ -440,7 +440,7 @@ const CurrencyConverterCalculator = () => {
                     </svg>
                     <span>Exchange Rate: {conversionResults[0].rate.toFixed(4)}</span>
                   </div>
-                  <h3 className={resultValueClasses}>
+                  <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                     {formatCurrency(conversionResults[0].convertedAmount, toCurrency)}
                   </h3>
                   <p className="text-gray-400 text-sm mt-2">
@@ -460,13 +460,13 @@ const CurrencyConverterCalculator = () => {
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-gray-400 text-sm">Base Currency</h3>
-                  <p className={resultValueClasses}>{fromCurrency}</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{fromCurrency}</p>
                   <p className="text-gray-300">{getCurrencyName(fromCurrency)}</p>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-gray-400 text-sm">Target Currency</h3>
-                  <p className={resultValueClasses}>{toCurrency}</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{toCurrency}</p>
                   <p className="text-gray-300">{getCurrencyName(toCurrency)}</p>
                 </div>
               </div>
@@ -476,13 +476,13 @@ const CurrencyConverterCalculator = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-gray-300">1 {fromCurrency} =</p>
-                    <p className={resultValueClasses}>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                       {conversionResults.length > 0 ? conversionResults[0].rate.toFixed(4) : '0.0000'} {toCurrency}
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-300">1 {toCurrency} =</p>
-                    <p className={resultValueClasses}>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                       {conversionResults.length > 0 ? (1 / conversionResults[0].rate).toFixed(4) : '0.0000'} {fromCurrency}
                     </p>
                   </div>

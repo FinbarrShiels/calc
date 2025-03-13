@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface PressureConverterProps {
   calculator?: Calculator;
@@ -213,18 +213,18 @@ const PressureConverter: React.FC<PressureConverterProps> = ({ calculator }) => 
       <h2 className="calculator-section-header">Result</h2>
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {valueStr || '0'} {getUnitFullName(fromUnit)} equals
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {result.toLocaleString(undefined, { minimumFractionDigits: precision, maximumFractionDigits: precision })} {getUnitDisplayName(toUnit)}
             </div>
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {getUnitFullName(toUnit)}
             </div>
           </div>
           
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Common Pressure Conversions</h3>
             <ul className="space-y-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
               <li>1 bar = 100,000 pascals</li>
@@ -241,7 +241,7 @@ const PressureConverter: React.FC<PressureConverterProps> = ({ calculator }) => 
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Pressure Applications</h3>
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               <p>Pressure is force per unit area. The SI unit of pressure is the pascal (Pa), which is equal to one newton per square meter (N/m²).</p>
               <p className="mt-2">Different pressure units are used in various fields:</p>
               <ul className="list-disc pl-5 mt-2 space-y-1">

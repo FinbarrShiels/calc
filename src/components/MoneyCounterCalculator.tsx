@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 // Define currency denominations
 const CURRENCY_DENOMINATIONS = {
@@ -133,7 +133,7 @@ const MoneyCounterCalculator = () => {
       <div className="mb-4">
         <label className="block text-gray-300 mb-1 text-sm">Currency</label>
         <select 
-          className={inputClasses}
+          className="calculator-input"
           value={currency}
           onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
         >
@@ -160,7 +160,7 @@ const MoneyCounterCalculator = () => {
                     min="0"
                     value={noteCounts[note] || 0} {...numericInputProps}
                     onChange={(e) => handleNoteCountChange(note, e.target.value)}
-                    className={inputClasses}
+                    className="calculator-input"
                   />
                 </div>
                 <div className="w-24 text-right text-xs">
@@ -194,7 +194,7 @@ const MoneyCounterCalculator = () => {
                     min="0"
                     value={coinCounts[coin] || 0} {...numericInputProps}
                     onChange={(e) => handleCoinCountChange(coin, e.target.value)}
-                    className={inputClasses}
+                    className="calculator-input"
                   />
                 </div>
                 <div className="w-24 text-right text-xs">

@@ -5,7 +5,7 @@ import { Calculator } from '@/data/calculators';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title);
 
@@ -426,12 +426,12 @@ const BMICalculator: React.FC<BMICalculatorProps> = ({ calculator }) => {
           
           {/* BMI Formula - Only visible on desktop */}
           <div className="hidden md:block">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">BMI Formula</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 BMI = weight (kg) / height² (m²)
               </p>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 For imperial units: BMI = (weight (lb) × 703) / height² (in²)
               </p>
             </div>
@@ -444,7 +444,7 @@ const BMICalculator: React.FC<BMICalculatorProps> = ({ calculator }) => {
           
           {/* BMI Result */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Your Body Mass Index (BMI)
             </div>
             <div className="text-2xl font-bold" style={{ color: getBmiCategoryColor() }}>
@@ -457,7 +457,7 @@ const BMICalculator: React.FC<BMICalculatorProps> = ({ calculator }) => {
           
           {/* Health Risk */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Health Risk Assessment
             </div>
             <div className="text-md font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -467,7 +467,7 @@ const BMICalculator: React.FC<BMICalculatorProps> = ({ calculator }) => {
           
           {/* Ideal Weight Range */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Ideal Weight Range (BMI 18.5-24.9)
             </div>
             <div className="text-md font-medium text-green-600 dark:text-green-400">
@@ -482,12 +482,12 @@ const BMICalculator: React.FC<BMICalculatorProps> = ({ calculator }) => {
           
           {/* BMI Categories - Only visible on mobile */}
           <div className="block md:hidden">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">BMI Formula</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 BMI = weight (kg) / height² (m²)
               </p>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 For imperial units: BMI = (weight (lb) × 703) / height² (in²)
               </p>
             </div>
@@ -496,7 +496,7 @@ const BMICalculator: React.FC<BMICalculatorProps> = ({ calculator }) => {
           {/* Disclaimer */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Important Note</h3>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               BMI is a screening tool, not a diagnostic tool. It has limitations and doesn't account for factors like muscle mass, bone density, or body fat distribution. Consult with a healthcare provider for a comprehensive health assessment.
             </p>
           </div>

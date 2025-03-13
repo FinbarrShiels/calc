@@ -10,7 +10,7 @@ import {
   Title,
 } from 'chart.js';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 // Register ChartJS components
 ChartJS.register(
@@ -208,7 +208,7 @@ const MarginCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Margin Type</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={marginType}
               onChange={(e) => setMarginType(e.target.value)}
             >
@@ -221,7 +221,7 @@ const MarginCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Currency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
@@ -241,7 +241,7 @@ const MarginCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={revenueStr}
                 onChange={(e) => handleNumberInput(e.target.value, setRevenueStr)} {...decimalInputProps}
               />
@@ -254,7 +254,7 @@ const MarginCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={cogsStr}
                 onChange={(e) => handleNumberInput(e.target.value, setCogsStr)} {...decimalInputProps}
               />
@@ -268,7 +268,7 @@ const MarginCalculator = () => {
                 <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
                 <input
                   type="tel"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={operatingExpensesStr}
                   onChange={(e) => handleNumberInput(e.target.value, setOperatingExpensesStr)} {...decimalInputProps}
                 />
@@ -283,7 +283,7 @@ const MarginCalculator = () => {
                 <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
                 <input
                   type="tel"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={otherExpensesStr}
                   onChange={(e) => handleNumberInput(e.target.value, setOtherExpensesStr)} {...decimalInputProps}
                 />
@@ -301,12 +301,12 @@ const MarginCalculator = () => {
               <>
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-gray-400 text-sm">Gross Profit</h3>
-                  <p className={resultValueClasses}>{formatCurrency(grossProfit)}</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(grossProfit)}</p>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-gray-400 text-sm">Gross Margin</h3>
-                  <p className={resultValueClasses}>{formatPercentage(grossMargin)}</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatPercentage(grossMargin)}</p>
                 </div>
               </>
             )}
@@ -315,12 +315,12 @@ const MarginCalculator = () => {
               <>
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-gray-400 text-sm">Operating Profit</h3>
-                  <p className={resultValueClasses}>{formatCurrency(operatingProfit)}</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(operatingProfit)}</p>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-gray-400 text-sm">Sales Margin</h3>
-                  <p className={resultValueClasses}>{formatPercentage(salesMargin)}</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatPercentage(salesMargin)}</p>
                 </div>
               </>
             )}
@@ -329,12 +329,12 @@ const MarginCalculator = () => {
               <>
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-gray-400 text-sm">Net Profit</h3>
-                  <p className={resultValueClasses}>{formatCurrency(netProfit)}</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(netProfit)}</p>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
                   <h3 className="text-gray-400 text-sm">Net Profit Margin</h3>
-                  <p className={resultValueClasses}>{formatPercentage(netProfitMargin)}</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatPercentage(netProfitMargin)}</p>
                 </div>
               </>
             )}
@@ -437,7 +437,7 @@ const MarginCalculator = () => {
           </p>
           
           <div>
-            <h3 className={calculatorSectionHeaderClasses}>Gross Margin</h3>
+            <h3 className="calculator-section-header">Gross Margin</h3>
             <p>
               Gross margin represents the percentage of revenue that exceeds the cost of goods sold (COGS). 
               It shows how efficiently a company can produce and sell its products.
@@ -448,7 +448,7 @@ const MarginCalculator = () => {
           </div>
           
           <div>
-            <h3 className={calculatorSectionHeaderClasses}>Sales Margin (Operating Margin)</h3>
+            <h3 className="calculator-section-header">Sales Margin (Operating Margin)</h3>
             <p>
               Sales margin, also known as operating margin, measures the percentage of revenue that remains 
               after accounting for both COGS and operating expenses. It reflects operational efficiency.
@@ -459,7 +459,7 @@ const MarginCalculator = () => {
           </div>
           
           <div>
-            <h3 className={calculatorSectionHeaderClasses}>Net Profit Margin</h3>
+            <h3 className="calculator-section-header">Net Profit Margin</h3>
             <p>
               Net profit margin shows the percentage of revenue that becomes profit after accounting for all expenses, 
               including COGS, operating expenses, interest, taxes, and other costs.

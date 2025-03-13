@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { format, addDays, addWeeks, differenceInDays, differenceInWeeks, isValid, parseISO } from 'date-fns';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface PregnancyCalculatorProps {
   calculator?: Calculator;
@@ -376,25 +376,25 @@ const PregnancyCalculator: React.FC<PregnancyCalculatorProps> = ({ calculator })
           )}
           
           {/* Calculation Method Explanation */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">About This Calculation Method</h3>
             {calculationMethod === 'lmp' && (
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 This method uses the first day of your last menstrual period (LMP) to calculate your due date. It adds 280 days (40 weeks) to your LMP date, assuming a 28-day cycle with ovulation on day 14. If your cycle is longer or shorter, the calculator adjusts accordingly.
               </p>
             )}
             {calculationMethod === 'conception' && (
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 This method uses your known or estimated conception date (ovulation date when fertilization occurred) to calculate your due date. It adds 266 days (38 weeks) to your conception date.
               </p>
             )}
             {calculationMethod === 'ultrasound' && (
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 This method uses the gestational age determined by an ultrasound to calculate your due date. Early ultrasounds (before 20 weeks) are generally more accurate for dating a pregnancy than later ones.
               </p>
             )}
             {calculationMethod === 'ivf' && (
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 This method uses the date of embryo transfer during IVF to calculate your due date. It adds 266 days (38 weeks) to your transfer date for a 3-day embryo, or 264 days for a 5-day blastocyst.
               </p>
             )}
@@ -406,11 +406,11 @@ const PregnancyCalculator: React.FC<PregnancyCalculatorProps> = ({ calculator })
       <h2 className="calculator-section-header">Results</h2>
           
           {/* Due Date Result */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Estimated Due Date
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {formatDate(dueDate)}
             </div>
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
@@ -420,7 +420,7 @@ const PregnancyCalculator: React.FC<PregnancyCalculatorProps> = ({ calculator })
           
           {/* Current Progress */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Current Pregnancy Progress
             </div>
             <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -435,7 +435,7 @@ const PregnancyCalculator: React.FC<PregnancyCalculatorProps> = ({ calculator })
           
           {/* Conception Date */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {calculationMethod === 'conception' || calculationMethod === 'ivf' 
                 ? 'Selected Conception Date' 
                 : 'Estimated Conception Date'}
@@ -452,19 +452,19 @@ const PregnancyCalculator: React.FC<PregnancyCalculatorProps> = ({ calculator })
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>First Trimester (Weeks 1-13)</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">First Trimester (Weeks 1-13)</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   Ends: {formatDate(firstTrimesterEnd)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Second Trimester (Weeks 14-27)</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Second Trimester (Weeks 14-27)</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   Ends: {formatDate(secondTrimesterEnd)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Third Trimester (Weeks 28-40+)</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Third Trimester (Weeks 28-40+)</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   Ends: {formatDate(thirdTrimesterEnd)}
                 </span>
@@ -490,7 +490,7 @@ const PregnancyCalculator: React.FC<PregnancyCalculatorProps> = ({ calculator })
                   </div>
                 ))}
                 {getUpcomingMilestones().length === 0 && (
-                  <div className={resultLabelClasses}>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
                     No more milestones! Your baby is due any day now.
                   </div>
                 )}
@@ -514,7 +514,7 @@ const PregnancyCalculator: React.FC<PregnancyCalculatorProps> = ({ calculator })
                   </div>
                 ))}
                 {getPassedMilestones().length === 0 && (
-                  <div className={resultLabelClasses}>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
                     No milestones passed yet.
                   </div>
                 )}
@@ -525,7 +525,7 @@ const PregnancyCalculator: React.FC<PregnancyCalculatorProps> = ({ calculator })
           {/* Important Note */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Important Note</h3>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               This calculator provides estimates only. Due dates can vary based on many factors. Only about 5% of babies are born on their exact due date, with most births occurring within two weeks before or after. Always consult with your healthcare provider for the most accurate information about your pregnancy.
             </p>
           </div>

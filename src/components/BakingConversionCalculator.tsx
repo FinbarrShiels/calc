@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface BakingConversionCalculatorProps {
   calculator?: Calculator;
@@ -307,7 +307,7 @@ const BakingConversionCalculator: React.FC<BakingConversionCalculatorProps> = ({
           </div>
           
           {/* Conversion Explanation */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Conversion Tips</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300">
               For the most accurate results in baking:
@@ -326,7 +326,7 @@ const BakingConversionCalculator: React.FC<BakingConversionCalculatorProps> = ({
       <h2 className="calculator-section-header">Result</h2>
           
           {/* Conversion Result */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <div className="text-sm font-medium text-gray-600 dark:text-gray-300">
               Conversion Result
             </div>

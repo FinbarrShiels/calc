@@ -13,7 +13,7 @@ import {
   Legend,
 } from 'chart.js';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 // Register ChartJS components
 ChartJS.register(
@@ -336,7 +336,7 @@ const HowLongToSaveCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Currency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
@@ -355,7 +355,7 @@ const HowLongToSaveCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={initialSavingsStr}
                 onChange={(e) => handleNumberInput(e.target.value, setInitialSavingsStr)} {...decimalInputProps}
               />
@@ -368,7 +368,7 @@ const HowLongToSaveCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={targetAmountStr}
                 onChange={(e) => handleNumberInput(e.target.value, setTargetAmountStr)} {...decimalInputProps}
               />
@@ -381,7 +381,7 @@ const HowLongToSaveCalculator = () => {
               <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={contributionAmountStr}
                 onChange={(e) => handleNumberInput(e.target.value, setContributionAmountStr)} {...decimalInputProps}
               />
@@ -391,7 +391,7 @@ const HowLongToSaveCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Contribution Frequency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={contributionFrequency}
               onChange={(e) => setContributionFrequency(e.target.value)}
             >
@@ -408,7 +408,7 @@ const HowLongToSaveCalculator = () => {
             <div className="relative">
               <input
                 type="tel"
-                className={inputClasses}
+                className="calculator-input"
                 value={interestRateStr}
                 onChange={(e) => handleNumberInput(e.target.value, setInterestRateStr)} {...decimalInputProps}
               />
@@ -419,7 +419,7 @@ const HowLongToSaveCalculator = () => {
           <div className="mb-4">
             <label className="block text-gray-300 mb-2">Compound Frequency</label>
             <select 
-              className={inputClasses}
+              className="calculator-input"
               value={compoundFrequency}
               onChange={(e) => setCompoundFrequency(e.target.value)}
             >
@@ -439,24 +439,24 @@ const HowLongToSaveCalculator = () => {
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Time to Reach Goal</h3>
-              <p className={resultValueClasses}>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatTime(timeToReachGoal.years, timeToReachGoal.months)}
               </p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Final Balance</h3>
-              <p className={resultValueClasses}>{formatCurrency(finalBalance)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(finalBalance)}</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Total Contributions</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalContributions)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalContributions)}</p>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="text-gray-400 text-sm">Total Interest</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalInterest)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalInterest)}</p>
             </div>
           </div>
           
@@ -517,7 +517,7 @@ const HowLongToSaveCalculator = () => {
           <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
             <h3 className="text-lg font-bold mb-2 text-blue-400">Breakdown</h3>
             <div className="flex items-center mb-2">
-              <div className={inputClasses}>
+              <div className="calculator-input">
                 <div 
                   className="bg-green-500 h-4 rounded-full" 
                   style={{ width: `${(totalContributions / finalBalance) * 100}%` }}
@@ -525,10 +525,10 @@ const HowLongToSaveCalculator = () => {
               </div>
               <span className="ml-2 text-gray-300">{((totalContributions / finalBalance) * 100).toFixed(1)}%</span>
             </div>
-            <p className={resultLabelClasses}>Contributions</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Contributions</p>
             
             <div className="flex items-center mt-3 mb-2">
-              <div className={inputClasses}>
+              <div className="calculator-input">
                 <div 
                   className="bg-orange-500 h-4 rounded-full" 
                   style={{ width: `${(totalInterest / finalBalance) * 100}%` }}
@@ -536,7 +536,7 @@ const HowLongToSaveCalculator = () => {
               </div>
               <span className="ml-2 text-gray-300">{((totalInterest / finalBalance) * 100).toFixed(1)}%</span>
             </div>
-            <p className={resultLabelClasses}>Interest</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Interest</p>
           </div>
         </div>
       </div>

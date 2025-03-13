@@ -1,19 +1,20 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
+import React, { useState, useEffect, useRef } from 'react';
+import { Calculator } from '@/data/calculators';
+import { numericInputProps } from '@/utils/inputUtils';
+import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 } from 'chart.js';
-import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
 
 // Register ChartJS components
 ChartJS.register(
@@ -21,12 +22,23 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 );
 
-interface InvestmentRow {
+interface InvestmentCalculatorProps {
+  calculator?: Calculator;
+}
+
+interface CurrencyOption {
+  value: string;
+  label: string;
+  symbol: string;
+}
+
+interface YearlyData {
   year: number;
   startBalance: number;
   contribution: number;
@@ -36,232 +48,194 @@ interface InvestmentRow {
   totalInterest: number;
 }
 
-const InvestmentCalculator = () => {
-  // State for form inputs
-  const [currency, setCurrency] = useState('$');
-  const [initialInvestmentStr, setInitialInvestmentStr] = useState('10000');
-  const [contributionAmountStr, setContributionAmountStr] = useState('500');
-  const [contributionFrequency, setContributionFrequency] = useState('monthly');
-  const [contributionIncreaseStr, setContributionIncreaseStr] = useState('0');
-  const [interestRateStr, setInterestRateStr] = useState('7');
-  const [compoundFrequency, setCompoundFrequency] = useState('Monthly (12/yr)');
-  const [investmentDurationStr, setInvestmentDurationStr] = useState('20');
-  const [inflationRateStr, setInflationRateStr] = useState('2.5');
-  const [showInflationAdjusted, setShowInflationAdjusted] = useState(false);
-  const [taxRateStr, setTaxRateStr] = useState('25');
-  const [showAfterTax, setShowAfterTax] = useState(false);
+type CompoundFrequency = 'annually' | 'semi-annually' | 'quarterly' | 'monthly' | 'daily';
+type ViewType = 'chart' | 'table';
+type ChartType = 'line' | 'bar';
 
-  // Derived numeric values for calculations
-  const initialInvestment = parseFloat(initialInvestmentStr) || 0;
-  const contributionAmount = parseFloat(contributionAmountStr) || 0;
-  const contributionIncrease = parseFloat(contributionIncreaseStr) || 0;
-  const interestRate = parseFloat(interestRateStr) || 0;
-  const investmentDuration = parseFloat(investmentDurationStr) || 0;
-  const inflationRate = parseFloat(inflationRateStr) || 0;
-  const taxRate = parseFloat(taxRateStr) || 0;
-
-  // State for calculation results
-  const [investmentSchedule, setInvestmentSchedule] = useState<InvestmentRow[]>([]);
-  const [finalBalance, setFinalBalance] = useState(0);
-  const [finalBalanceInflationAdjusted, setFinalBalanceInflationAdjusted] = useState(0);
-  const [finalBalanceAfterTax, setFinalBalanceAfterTax] = useState(0);
-  const [totalContributions, setTotalContributions] = useState(0);
-  const [totalInterest, setTotalInterest] = useState(0);
-  const [viewMode, setViewMode] = useState('chart');
-
-  // Handle input changes with proper validation
-  const handleNumberInput = (
-    value: string, 
-    setter: React.Dispatch<React.SetStateAction<string>>,
-    allowNegative: boolean = false
-  ) => {
-    // Allow empty input
-    if (value === '') {
-      setter('');
-      return;
-    }
-    
-    // Handle special cases for decimal input
-    if (value === '.' || value === '0.') {
-      setter('0.');
-      return;
-    }
-    
-    if (value === '-' || value === '-.') {
-      if (allowNegative) {
-        setter('-');
-      }
-      return;
-    }
-    
-    // Validate the input format
-    const regex = allowNegative 
-      ? /^-?\d*\.?\d*$/ // Allow negative numbers
-      : /^\d*\.?\d*$/;  // Only positive numbers
-      
-    if (regex.test(value)) {
-      // Remove leading zeros for non-decimal numbers
-      if (value.indexOf('.') !== 1 && value.startsWith('0') && value.length > 1 && !value.startsWith('0.')) {
-        setter(value.replace(/^0+/, ''));
-      } else {
-        setter(value);
-      }
+const InvestmentCalculator: React.FC<InvestmentCalculatorProps> = ({ calculator }) => {
+  // Currency options
+  const currencyOptions: CurrencyOption[] = [
+    { value: 'USD', label: 'USD ($)', symbol: '$' },
+    { value: 'EUR', label: 'EUR (€)', symbol: '€' },
+    { value: 'GBP', label: 'GBP (£)', symbol: '£' },
+    { value: 'JPY', label: 'JPY (¥)', symbol: '¥' },
+    { value: 'INR', label: 'INR (₹)', symbol: '₹' }
+  ];
+  
+  // Compound frequency options
+  const compoundFrequencyOptions = [
+    { value: 'annually', label: 'Annually', timesPerYear: 1 },
+    { value: 'semi-annually', label: 'Semi-Annually', timesPerYear: 2 },
+    { value: 'quarterly', label: 'Quarterly', timesPerYear: 4 },
+    { value: 'monthly', label: 'Monthly', timesPerYear: 12 },
+    { value: 'daily', label: 'Daily', timesPerYear: 365 }
+  ];
+  
+  // State for inputs
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
+  const [initialInvestment, setInitialInvestment] = useState<number>(10000);
+  const [annualContribution, setAnnualContribution] = useState<number>(1200);
+  const [contributionFrequency, setContributionFrequency] = useState<string>('monthly');
+  const [annualInterestRate, setAnnualInterestRate] = useState<number>(7);
+  const [compoundFrequency, setCompoundFrequency] = useState<CompoundFrequency>('annually');
+  const [investmentPeriod, setInvestmentPeriod] = useState<number>(10);
+  
+  // State for results
+  const [finalBalance, setFinalBalance] = useState<number>(0);
+  const [totalContributions, setTotalContributions] = useState<number>(0);
+  const [totalInterest, setTotalInterest] = useState<number>(0);
+  const [yearlyData, setYearlyData] = useState<YearlyData[]>([]);
+  
+  // View state
+  const [viewType, setViewType] = useState<ViewType>('chart');
+  const [chartType, setChartType] = useState<ChartType>('line');
+  
+  // Get currency symbol
+  const getCurrencySymbol = (): string => {
+    const currency = currencyOptions.find(c => c.value === selectedCurrency);
+    return currency ? currency.symbol : '$';
+  };
+  
+  // Handle currency change
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCurrency(e.target.value);
+  };
+  
+  // Handle compound frequency change
+  const handleCompoundFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCompoundFrequency(e.target.value as CompoundFrequency);
+  };
+  
+  // Handle contribution frequency change
+  const handleContributionFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setContributionFrequency(e.target.value);
+  };
+  
+  // Get number of compounds per year
+  const getCompoundsPerYear = (): number => {
+    const frequency = compoundFrequencyOptions.find(f => f.value === compoundFrequency);
+    return frequency ? frequency.timesPerYear : 1;
+  };
+  
+  // Get number of contributions per year
+  const getContributionsPerYear = (): number => {
+    switch (contributionFrequency) {
+      case 'annually': return 1;
+      case 'semi-annually': return 2;
+      case 'quarterly': return 4;
+      case 'monthly': return 12;
+      case 'bi-weekly': return 26;
+      case 'weekly': return 52;
+      default: return 12;
     }
   };
 
   // Calculate investment growth
   const calculateInvestment = () => {
-    // Get compound frequency number
-    let compoundsPerYear = 12; // Default to monthly
-    if (compoundFrequency === 'Annually (1/yr)') compoundsPerYear = 1;
-    if (compoundFrequency === 'Semi-annually (2/yr)') compoundsPerYear = 2;
-    if (compoundFrequency === 'Quarterly (4/yr)') compoundsPerYear = 4;
-    if (compoundFrequency === 'Monthly (12/yr)') compoundsPerYear = 12;
-    if (compoundFrequency === 'Daily (365/yr)') compoundsPerYear = 365;
-
-    // Calculate contribution frequency
-    let contributionsPerYear = 12; // Default to monthly
-    if (contributionFrequency === 'annually') contributionsPerYear = 1;
-    if (contributionFrequency === 'quarterly') contributionsPerYear = 4;
-    if (contributionFrequency === 'monthly') contributionsPerYear = 12;
-    if (contributionFrequency === 'bi-weekly') contributionsPerYear = 26;
-    if (contributionFrequency === 'weekly') contributionsPerYear = 52;
-
-    // Convert interest rate to decimal
-    const rate = interestRate / 100;
+    const compoundsPerYear = getCompoundsPerYear();
+    const contributionsPerYear = getContributionsPerYear();
+    const contributionPerPeriod = annualContribution / contributionsPerYear;
+    const ratePerPeriod = annualInterestRate / 100 / compoundsPerYear;
+    const periodsPerYear = compoundsPerYear;
+    const periodsPerContribution = compoundsPerYear / contributionsPerYear;
     
-    // Calculate periodic interest rate
-    const periodicRate = rate / compoundsPerYear;
-    
-    // Initialize variables
     let balance = initialInvestment;
-    let totalContributionsAmount = 0;
-    let totalInterestAmount = 0;
-    let currentContribution = contributionAmount;
-    const schedule: InvestmentRow[] = [];
+    let totalContrib = initialInvestment;
+    let totalInt = 0;
     
-    // Calculate investment growth year by year
-    for (let year = 1; year <= investmentDuration; year++) {
+    const data: YearlyData[] = [];
+    
+    for (let year = 0; year <= investmentPeriod; year++) {
+      const startBalance = year === 0 ? initialInvestment : data[year - 1].endBalance;
+      let currentBalance = startBalance;
       let yearlyContribution = 0;
       let yearlyInterest = 0;
-      let startBalance = balance;
       
-      // Increase contribution amount annually if specified
-      if (year > 1 && contributionIncrease > 0) {
-        currentContribution *= (1 + contributionIncrease / 100);
-      }
-      
-      // Calculate each compound period within the year
-      for (let period = 1; period <= compoundsPerYear; period++) {
-        // Calculate interest for this period
-        const periodInterest = balance * periodicRate;
-        yearlyInterest += periodInterest;
-        balance += periodInterest;
-        
-        // Add contribution based on frequency
-        const contributionsPerPeriod = contributionsPerYear / compoundsPerYear;
-        for (let i = 0; i < contributionsPerPeriod; i++) {
-          balance += currentContribution;
-          yearlyContribution += currentContribution;
-          totalContributionsAmount += currentContribution;
+      if (year > 0) { // Skip first year for initial investment
+        // Calculate for each contribution period in this year
+        for (let i = 0; i < contributionsPerYear; i++) {
+          // Apply compound interest for periods before contribution
+          for (let j = 0; j < periodsPerContribution; j++) {
+            const interest = currentBalance * ratePerPeriod;
+            currentBalance += interest;
+            yearlyInterest += interest;
+          }
+          
+          // Add contribution
+          currentBalance += contributionPerPeriod;
+          yearlyContribution += contributionPerPeriod;
         }
+        
+        totalContrib += yearlyContribution;
+        totalInt += yearlyInterest;
       }
       
-      totalInterestAmount += yearlyInterest;
-      
-      // Add to schedule
-      schedule.push({
+      data.push({
         year,
-        startBalance: parseFloat(startBalance.toFixed(2)),
-        contribution: parseFloat(yearlyContribution.toFixed(2)),
-        interest: parseFloat(yearlyInterest.toFixed(2)),
-        endBalance: parseFloat(balance.toFixed(2)),
-        totalContributions: parseFloat(totalContributionsAmount.toFixed(2)),
-        totalInterest: parseFloat(totalInterestAmount.toFixed(2))
+        startBalance,
+        contribution: yearlyContribution,
+        interest: yearlyInterest,
+        endBalance: currentBalance,
+        totalContributions: totalContrib,
+        totalInterest: totalInt
       });
     }
     
-    // Calculate inflation-adjusted final balance
-    const inflationFactor = Math.pow(1 + inflationRate / 100, investmentDuration);
-    const inflationAdjustedBalance = balance / inflationFactor;
-    
-    // Calculate after-tax final balance
-    // Assuming tax is only paid on the interest/gains
-    const taxableAmount = balance - initialInvestment - totalContributionsAmount;
-    const taxAmount = taxableAmount * (taxRate / 100);
-    const afterTaxBalance = balance - taxAmount;
-    
-    // Set results
-    setInvestmentSchedule(schedule);
-    setFinalBalance(parseFloat(balance.toFixed(2)));
-    setFinalBalanceInflationAdjusted(parseFloat(inflationAdjustedBalance.toFixed(2)));
-    setFinalBalanceAfterTax(parseFloat(afterTaxBalance.toFixed(2)));
-    setTotalContributions(parseFloat(totalContributionsAmount.toFixed(2)));
-    setTotalInterest(parseFloat(totalInterestAmount.toFixed(2)));
+    setYearlyData(data);
+    setFinalBalance(data[data.length - 1].endBalance);
+    setTotalContributions(totalContrib);
+    setTotalInterest(totalInt);
   };
-
-  // Format currency
-  const formatCurrency = (value: number) => {
-    return `${currency}${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
-
-  // Format percentage
-  const formatPercentage = (value: number) => {
-    return `${value.toFixed(2)}%`;
-  };
-
-  // Calculate on input change
+  
+  // Calculate when inputs change
   useEffect(() => {
     calculateInvestment();
-  }, [
-    initialInvestmentStr,
-    contributionAmountStr,
-    contributionFrequency,
-    contributionIncreaseStr,
-    interestRateStr,
-    compoundFrequency,
-    investmentDurationStr,
-    inflationRateStr,
-    taxRateStr
-  ]);
-
-  // Chart data
-  const chartData = {
-    labels: investmentSchedule.map(row => `Year ${row.year}`),
+  }, [initialInvestment, annualContribution, contributionFrequency, annualInterestRate, compoundFrequency, investmentPeriod]);
+  
+  // Format currency
+  const formatCurrency = (value: number): string => {
+    return getCurrencySymbol() + value.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  };
+  
+  // Chart data for balance growth
+  const balanceChartData = {
+    labels: yearlyData.map(data => `Year ${data.year}`),
     datasets: [
       {
-        label: 'End Balance',
-        data: investmentSchedule.map(row => row.endBalance),
-        borderColor: 'rgba(59, 130, 246, 1)', // blue-500
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
+        label: 'Balance',
+        data: yearlyData.map(data => data.endBalance),
+        backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
+        borderColor: '#3b82f6', // blue-500
+        borderWidth: 1,
+        fill: chartType === 'line',
         tension: 0.1
+      }
+    ]
+  };
+  
+  // Chart data for breakdown
+  const breakdownChartData = {
+    labels: yearlyData.map(data => `Year ${data.year}`),
+    datasets: [
+      {
+        label: 'Contributions',
+        data: yearlyData.map(data => data.totalContributions),
+        backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
+        borderColor: '#3b82f6', // blue-500
+        borderWidth: 1,
+        stack: 'Stack 0'
       },
       {
-        label: 'Total Contributions',
-        data: investmentSchedule.map(row => row.totalContributions),
-        borderColor: 'rgba(16, 185, 129, 1)', // green-500
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        fill: true,
-        tension: 0.1
-      },
-      {
-        label: 'Total Interest',
-        data: investmentSchedule.map(row => row.totalInterest),
-        borderColor: 'rgba(249, 115, 22, 1)', // orange-500
-        backgroundColor: 'rgba(249, 115, 22, 0.1)',
-        fill: true,
-        tension: 0.1
-      },
-      ...(showInflationAdjusted ? [{
-        label: 'Inflation-Adjusted Balance',
-        data: investmentSchedule.map(row => row.endBalance / Math.pow(1 + inflationRate / 100, row.year)),
-        borderColor: 'rgba(139, 92, 246, 1)', // purple-500
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        fill: false,
-        borderDash: [5, 5],
-        tension: 0.1
-      }] : [])
+        label: 'Interest',
+        data: yearlyData.map(data => data.totalInterest),
+        backgroundColor: 'rgba(16, 185, 129, 0.5)', // green-500 with opacity
+        borderColor: '#10b981', // green-500
+        borderWidth: 1,
+        stack: 'Stack 0'
+      }
     ]
   };
 
@@ -269,6 +243,28 @@ const InvestmentCalculator = () => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+        },
+        ticks: {
+          color: '#e5e7eb', // text-gray-200
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+        },
+        ticks: {
+          color: '#e5e7eb', // text-gray-200
+          callback: function(value: any) {
+            return getCurrencySymbol() + value.toLocaleString();
+          }
+        }
+      }
+    },
     plugins: {
       legend: {
         position: 'top' as const,
@@ -279,328 +275,326 @@ const InvestmentCalculator = () => {
           }
         }
       },
-      title: {
-        display: true,
-        text: 'Investment Growth Over Time',
-        color: '#e5e7eb', // text-gray-200
-        font: {
-          size: 16
-        }
-      },
       tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.9)', // bg-gray-900 with opacity
+        titleColor: '#f9fafb', // text-gray-50
+        bodyColor: '#f3f4f6', // text-gray-100
+        padding: 10,
+        borderColor: 'rgba(75, 85, 99, 0.3)', // gray-600 with opacity
+        borderWidth: 1,
         callbacks: {
           label: function(context: any) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y !== null) {
-              label += formatCurrency(context.parsed.y);
-            }
-            return label;
+            const label = context.dataset.label || '';
+            const value = context.raw;
+            return `${label}: ${getCurrencySymbol()}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           }
         }
       }
-    },
+    }
+  };
+  
+  // Stacked chart options
+  const stackedChartOptions = {
+    ...chartOptions,
     scales: {
+      ...chartOptions.scales,
       x: {
-        ticks: {
-          color: '#9ca3af', // text-gray-400
-        },
-        grid: {
-          color: 'rgba(75, 85, 99, 0.2)', // gray-600 with opacity
-        }
+        ...chartOptions.scales.x,
+        stacked: true
       },
       y: {
-        ticks: {
-          color: '#9ca3af', // text-gray-400
-          callback: function(value: any) {
-            return formatCurrency(value);
-          }
-        },
-        grid: {
-          color: 'rgba(75, 85, 99, 0.2)', // gray-600 with opacity
-        }
+        ...chartOptions.scales.y,
+        stacked: true
       }
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 text-white dark:text-gray-900 rounded-lg shadow-lg p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Input Form */}
-        <div className="calculator-card-alt rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4 text-blue-400">Investment Parameters</h2>
+    <div className="bg-gray-800 text-white rounded-lg shadow-xl p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Input Section */}
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <h2 className="text-xl font-bold text-white mb-4">Investment Calculator</h2>
           
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Currency</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="currency" className="block text-sm font-medium text-gray-300 mb-1">
+                Currency
+              </label>
             <select 
-              className={inputClasses}
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-            >
-              <option value="$">USD ($)</option>
-              <option value="€">EUR (€)</option>
-              <option value="£">GBP (£)</option>
-              <option value="₹">INR (₹)</option>
-              <option value="¥">JPY (¥)</option>
-              <option value="C$">CAD (C$)</option>
-              <option value="A$">AUD (A$)</option>
+                id="currency"
+                value={selectedCurrency}
+                onChange={handleCurrencyChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {currencyOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
             </select>
           </div>
           
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Initial Investment</label>
+            <div>
+              <label htmlFor="initialInvestment" className="block text-sm font-medium text-gray-300 mb-1">
+                Initial Investment
+              </label>
             <div className="relative">
-              <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
+                </div>
               <input
+                  id="initialInvestment"
                 type="tel"
-                className={inputClasses}
-                value={initialInvestmentStr}
-                onChange={(e) => handleNumberInput(e.target.value, setInitialInvestmentStr)} {...decimalInputProps}
+                  value={initialInvestment} {...numericInputProps}
+                  onChange={(e) => setInitialInvestment(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
           
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Regular Contribution</label>
+            <div>
+              <label htmlFor="annualContribution" className="block text-sm font-medium text-gray-300 mb-1">
+                Annual Contribution
+              </label>
             <div className="relative">
-              <span className="absolute left-3 top-2 text-gray-400">{currency}</span>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
+                </div>
               <input
+                  id="annualContribution"
                 type="tel"
-                className={inputClasses}
-                value={contributionAmountStr}
-                onChange={(e) => handleNumberInput(e.target.value, setContributionAmountStr)} {...decimalInputProps}
+                  value={annualContribution} {...numericInputProps}
+                  onChange={(e) => setAnnualContribution(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
           
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Contribution Frequency</label>
+            <div>
+              <label htmlFor="contributionFrequency" className="block text-sm font-medium text-gray-300 mb-1">
+                Contribution Frequency
+              </label>
             <select 
-              className={inputClasses}
+                id="contributionFrequency"
               value={contributionFrequency}
-              onChange={(e) => setContributionFrequency(e.target.value)}
+                onChange={handleContributionFrequencyChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
+                <option value="annually">Annually</option>
+                <option value="semi-annually">Semi-Annually</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="monthly">Monthly</option>
+                <option value="bi-weekly">Bi-Weekly</option>
               <option value="weekly">Weekly</option>
-              <option value="bi-weekly">Bi-weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="annually">Annually</option>
             </select>
           </div>
           
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Annual Contribution Increase (%)</label>
+            <div>
+              <label htmlFor="annualInterestRate" className="block text-sm font-medium text-gray-300 mb-1">
+                Annual Interest Rate
+              </label>
             <div className="relative">
               <input
+                  id="annualInterestRate"
                 type="tel"
-                className={inputClasses}
-                value={contributionIncreaseStr}
-                onChange={(e) => handleNumberInput(e.target.value, setContributionIncreaseStr)} {...decimalInputProps}
-              />
-              <span className="absolute right-3 top-2 text-gray-400">%</span>
+                  value={annualInterestRate} {...numericInputProps}
+                  onChange={(e) => setAnnualInterestRate(Number(e.target.value))}
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">%</span>
+            </div>
             </div>
           </div>
           
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Annual Interest Rate (%)</label>
-            <div className="relative">
-              <input
-                type="tel"
-                className={inputClasses}
-                value={interestRateStr}
-                onChange={(e) => handleNumberInput(e.target.value, setInterestRateStr)} {...decimalInputProps}
-              />
-              <span className="absolute right-3 top-2 text-gray-400">%</span>
-            </div>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Compound Frequency</label>
+            <div>
+              <label htmlFor="compoundFrequency" className="block text-sm font-medium text-gray-300 mb-1">
+                Compound Frequency
+              </label>
             <select 
-              className={inputClasses}
+                id="compoundFrequency"
               value={compoundFrequency}
-              onChange={(e) => setCompoundFrequency(e.target.value)}
-            >
-              <option value="Annually (1/yr)">Annually (1/yr)</option>
-              <option value="Semi-annually (2/yr)">Semi-annually (2/yr)</option>
-              <option value="Quarterly (4/yr)">Quarterly (4/yr)</option>
-              <option value="Monthly (12/yr)">Monthly (12/yr)</option>
-              <option value="Daily (365/yr)">Daily (365/yr)</option>
+                onChange={handleCompoundFrequencyChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {compoundFrequencyOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
             </select>
           </div>
           
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Investment Duration (Years)</label>
-            <input
-              type="tel"
-              className={inputClasses}
-              value={investmentDurationStr}
-              onChange={(e) => handleNumberInput(e.target.value, setInvestmentDurationStr)} {...decimalInputProps}
-            />
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Annual Inflation Rate (%)</label>
-            <div className="relative">
+            <div>
+              <label htmlFor="investmentPeriod" className="block text-sm font-medium text-gray-300 mb-1">
+                Investment Period (years)
+              </label>
               <input
+                id="investmentPeriod"
                 type="tel"
-                className={inputClasses}
-                value={inflationRateStr}
-                onChange={(e) => handleNumberInput(e.target.value, setInflationRateStr)} {...decimalInputProps}
+                value={investmentPeriod} {...numericInputProps}
+                onChange={(e) => setInvestmentPeriod(Number(e.target.value))}
+                min="1"
+                max="50"
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <span className="absolute right-3 top-2 text-gray-400">%</span>
             </div>
           </div>
           
-          <div className="mb-4">
-            <label className="flex items-center text-gray-300">
-              <input
-                type="checkbox"
-                className="mr-2 h-4 w-4 rounded border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-blue-500"
-                checked={showInflationAdjusted}
-                onChange={(e) => setShowInflationAdjusted(e.target.checked)}
-              />
-              Show inflation-adjusted values
-            </label>
+          <div className="mt-6 bg-gray-800 p-4 rounded-md border border-gray-700">
+            <h3 className="text-lg font-medium mb-3 text-blue-400">Investment Summary</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-400 text-sm">Final Balance</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(finalBalance)}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Total Contributions</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(totalContributions)}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Total Interest Earned</p>
+                <p className="text-xl font-semibold text-green-400">{formatCurrency(totalInterest)}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Interest to Contribution Ratio</p>
+                <p className="text-xl font-semibold text-white">
+                  {totalContributions > 0 ? `${(totalInterest / totalContributions * 100).toFixed(2)}%` : '0%'}
+                </p>
           </div>
-          
-          <div className="mb-4">
-            <label className="block text-gray-300 mb-2">Tax Rate on Gains (%)</label>
-            <div className="relative">
-              <input
-                type="tel"
-                className={inputClasses}
-                value={taxRateStr}
-                onChange={(e) => handleNumberInput(e.target.value, setTaxRateStr)} {...decimalInputProps}
-              />
-              <span className="absolute right-3 top-2 text-gray-400">%</span>
             </div>
-          </div>
-          
-          <div className="mb-4">
-            <label className="flex items-center text-gray-300">
-              <input
-                type="checkbox"
-                className="mr-2 h-4 w-4 rounded border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-blue-500"
-                checked={showAfterTax}
-                onChange={(e) => setShowAfterTax(e.target.checked)}
-              />
-              Show after-tax values
-            </label>
           </div>
         </div>
         
-        {/* Results */}
-        <div className="calculator-card-alt rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4 text-blue-400">Investment Results</h2>
-          
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className="text-gray-400 text-sm">Final Balance</h3>
-              <p className={resultValueClasses}>{formatCurrency(finalBalance)}</p>
-            </div>
-            
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className="text-gray-400 text-sm">Total Contributions</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalContributions)}</p>
-            </div>
-            
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className="text-gray-400 text-sm">Total Interest</h3>
-              <p className={resultValueClasses}>{formatCurrency(totalInterest)}</p>
-            </div>
-            
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className="text-gray-400 text-sm">Return on Investment</h3>
-              <p className={resultValueClasses}>
-                {formatPercentage((finalBalance - initialInvestment - totalContributions) / (initialInvestment + totalContributions) * 100)}
-              </p>
+        {/* Results Section */}
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">Results</h2>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setViewType('chart')}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewType === 'chart' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                Chart
+              </button>
+              <button
+                onClick={() => setViewType('table')}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewType === 'table' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                Table
+              </button>
             </div>
           </div>
           
-          <div className="mb-4">
+          {viewType === 'chart' && (
+            <div className="space-y-6">
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-bold text-blue-400">Investment Growth</h3>
+                  <h3 className="text-lg font-medium text-blue-400">Balance Growth</h3>
               <div className="flex space-x-2">
                 <button
-                  className={`px-3 py-1 rounded ${viewMode === 'table' ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' : 'bg-gray-100 dark:bg-gray-800 text-gray-300'}`}
-                  onClick={() => setViewMode('table')}
-                >
-                  Table
+                      onClick={() => setChartType('line')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        chartType === 'line' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      Line
                 </button>
                 <button
-                  className={`px-3 py-1 rounded ${viewMode === 'chart' ? 'bg-blue-600 text-gray-900 dark:text-white-foreground' : 'bg-gray-100 dark:bg-gray-800 text-gray-300'}`}
-                  onClick={() => setViewMode('chart')}
-                >
-                  Chart
+                      onClick={() => setChartType('bar')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        chartType === 'bar' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      Bar
                 </button>
+                  </div>
+                </div>
+                <div className="h-80 w-full">
+                  {chartType === 'line' ? (
+                    <Line data={balanceChartData} options={chartOptions} />
+                  ) : (
+                    <Bar data={balanceChartData} options={chartOptions} />
+                  )}
+                </div>
               </div>
+              
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                <h3 className="text-lg font-medium text-blue-400 mb-2">Investment Breakdown</h3>
+                <div className="h-80 w-full">
+                  <Bar data={breakdownChartData} options={stackedChartOptions} />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Final Balance</h3>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(finalBalance)}</p>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Total Contributions</h3>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(totalContributions)}</p>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Total Interest</h3>
+                  <p className="text-2xl font-bold text-green-400">{formatCurrency(totalInterest)}</p>
             </div>
             
-            {viewMode === 'chart' && (
-              <div className="h-80 w-full">
-                <Line data={chartData} options={chartOptions} />
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Investment Period</h3>
+                  <p className="text-2xl font-bold text-white">{investmentPeriod} years</p>
+                </div>
+              </div>
               </div>
             )}
             
-            {viewMode === 'table' && (
-              <div className="overflow-x-auto">
-                <table className="calculator-table">
+          {viewType === 'table' && (
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-x-auto">
+              <h3 className="text-lg font-medium text-blue-400 mb-4">Yearly Breakdown</h3>
+              <table className="min-w-full divide-y divide-gray-700">
                   <thead>
                     <tr>
-                      <th className="calculator-table-header">Year</th>
-                      <th className="calculator-table-header">Contribution</th>
-                      <th className="calculator-table-header">Interest</th>
-                      <th className="calculator-table-header">End Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {investmentSchedule.map((row, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-muted' : 'bg-gray-750'}>
-                        <td className="calculator-table-cell">{row.year}</td>
-                        <td className="calculator-table-cell">{formatCurrency(row.contribution)}</td>
-                        <td className="calculator-table-cell">{formatCurrency(row.interest)}</td>
-                        <td className="calculator-table-cell">
-                          {formatCurrency(row.endBalance)}
-                          {showInflationAdjusted && (
-                            <span className="text-purple-400 text-xs ml-2">
-                              ({formatCurrency(row.endBalance / Math.pow(1 + inflationRate / 100, row.year))})
-                            </span>
-                          )}
-                        </td>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Year</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Start Balance</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Contribution</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Interest</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">End Balance</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {yearlyData.map((data, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{data.year}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{formatCurrency(data.startBalance)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{formatCurrency(data.contribution)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-green-400">{formatCurrency(data.interest)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-blue-400">{formatCurrency(data.endBalance)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
-          </div>
-          
-          <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-            <h3 className="text-lg font-bold mb-2 text-blue-400">Investment Breakdown</h3>
-            <div className="flex items-center mb-2">
-              <div className={inputClasses}>
-                <div 
-                  className={buttonClasses} 
-                  style={{ width: `${(initialInvestment / finalBalance) * 100}%` }}
-                ></div>
-                <div 
-                  className="bg-green-500 h-4" 
-                  style={{ 
-                    width: `${(totalContributions / finalBalance) * 100}%`,
-                    marginLeft: `${(initialInvestment / finalBalance) * 100}%`
-                  }}
-                ></div>
-              </div>
-            </div>
-            <div className="flex justify-between text-sm text-gray-400">
-              <span>Initial: {((initialInvestment / finalBalance) * 100).toFixed(1)}%</span>
-              <span>Contributions: {((totalContributions / finalBalance) * 100).toFixed(1)}%</span>
-              <span>Interest: {((totalInterest / finalBalance) * 100).toFixed(1)}%</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>

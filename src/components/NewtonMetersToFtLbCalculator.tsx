@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 const NewtonMetersToFtLbCalculator: React.FC = () => {
   // Input state
@@ -65,14 +65,14 @@ const NewtonMetersToFtLbCalculator: React.FC = () => {
   };
   
   return (
-    <div className={inputClasses}>
+    <div className="calculator-input">
       <div className="max-w-4xl mx-auto p-4">
         <h1 className="text-3xl font-bold mb-2 text-white dark:text-gray-900">Newton Meters to Foot Pounds Calculator</h1>
         <p className="text-gray-300 mb-6">Convert newton-meters (N·m) to foot-pounds (ft-lb) with precision. Perfect for torque conversions, engineering, and international unit conversions.</p>
         
         <div className="calculator-card-alt rounded-lg shadow-xl overflow-hidden">
           <div className="p-6">
-            <h2 className={calculatorSectionHeaderClasses}>Newton Meters to Foot Pounds Calculator</h2>
+            <h2 className="calculator-section-header">Newton Meters to Foot Pounds Calculator</h2>
             
             <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
               <div className="mb-4">
@@ -85,7 +85,7 @@ const NewtonMetersToFtLbCalculator: React.FC = () => {
                     type="tel"
                     value={newtonMetersStr}
                     onChange={(e) => handleNumberInput(e, setNewtonMetersStr)} {...decimalInputProps}
-                    className={inputClasses}
+                    className="calculator-input"
                     placeholder="Enter torque in newton-meters"
                   />
                   <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">N·m</span>
@@ -98,7 +98,7 @@ const NewtonMetersToFtLbCalculator: React.FC = () => {
                 </label>
                 <select
                   id="precision"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={precision}
                   onChange={handlePrecisionChange}
                 >
@@ -112,25 +112,25 @@ const NewtonMetersToFtLbCalculator: React.FC = () => {
             </div>
             
             <div className="calculator-card-alt p-6 rounded-lg shadow-lg">
-              <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+              <h3 className="calculator-section-header">Conversion Results</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                  <div className={resultLabelClasses}>Newton Meters</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Newton Meters</div>
                   <div className="text-xl sm:text-2xl font-bold text-green-400">
                     {newtonMetersStr === '' ? '0' : parseFloat(newtonMetersStr).toLocaleString()} N·m
                   </div>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-                  <div className={resultLabelClasses}>Foot Pounds</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Foot Pounds</div>
                   <div className="text-xl sm:text-2xl font-bold text-blue-400">
                     {footPounds !== null ? footPounds.toFixed(precision) : '0'} ft-lb
                   </div>
                 </div>
                 
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-                  <div className={resultLabelClasses}>Conversion Formula</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
                   <div className="text-md font-medium text-gray-300 mt-1">
                     {newtonMetersStr === '' ? '0' : newtonMetersStr} newton-meters × 0.7375621493 = {footPounds !== null ? footPounds.toFixed(precision) : '0'} foot-pounds
                   </div>
@@ -142,7 +142,7 @@ const NewtonMetersToFtLbCalculator: React.FC = () => {
             </div>
             
             <div className="mt-8 calculator-card-alt p-6 rounded-lg shadow-lg">
-              <h3 className={calculatorSectionHeaderClasses}>Common Conversions</h3>
+              <h3 className="calculator-section-header">Common Conversions</h3>
               
               <div className="overflow-x-auto">
                 <table className="calculator-table">

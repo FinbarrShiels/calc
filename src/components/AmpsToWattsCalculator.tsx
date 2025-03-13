@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface AmpsToWattsCalculatorProps {
   calculator?: Calculator;
@@ -96,7 +96,7 @@ const AmpsToWattsCalculator: React.FC<AmpsToWattsCalculatorProps> = ({ calculato
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
       <div className="p-6">
-        <h2 className={calculatorSectionHeaderClasses}>Amps to Watts Calculator</h2>
+        <h2 className="calculator-section-header">Amps to Watts Calculator</h2>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -108,7 +108,7 @@ const AmpsToWattsCalculator: React.FC<AmpsToWattsCalculatorProps> = ({ calculato
                 <input
                   type="tel"
                   id="amps"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={ampsStr} {...numericInputProps}
                   onChange={handleAmpsChange}
                 />
@@ -124,7 +124,7 @@ const AmpsToWattsCalculator: React.FC<AmpsToWattsCalculatorProps> = ({ calculato
                 <input
                   type="tel"
                   id="volts"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={voltsStr} {...numericInputProps}
                   onChange={handleVoltsChange}
                 />
@@ -140,7 +140,7 @@ const AmpsToWattsCalculator: React.FC<AmpsToWattsCalculatorProps> = ({ calculato
                 <input
                   type="tel"
                   id="powerFactor"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={powerFactorStr} {...numericInputProps}
                   onChange={handlePowerFactorChange}
                 />
@@ -155,7 +155,7 @@ const AmpsToWattsCalculator: React.FC<AmpsToWattsCalculatorProps> = ({ calculato
             </label>
             <select
               id="precision"
-              className={inputClasses}
+              className="calculator-input"
               value={precision}
               onChange={handlePrecisionChange}
             >
@@ -169,31 +169,31 @@ const AmpsToWattsCalculator: React.FC<AmpsToWattsCalculatorProps> = ({ calculato
         </div>
         
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+          <h3 className="calculator-section-header">Conversion Results</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Input Values</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Input Values</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">
                 {ampsStr === '' ? '0' : parseFloat(ampsStr).toLocaleString()} A × {voltsStr === '' ? '0' : parseFloat(voltsStr).toLocaleString()} V
               </div>
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Power Factor: {powerFactorStr === '' ? '1' : parseFloat(powerFactorStr).toLocaleString()}
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Power (Watts)</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Power (Watts)</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">
                 {watts.toFixed(precision)} W
               </div>
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 {kiloWatts.toFixed(precision)} kW
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-              <div className={resultLabelClasses}>Conversion Formula</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
               <div className="text-md font-medium text-gray-300 mt-1">
                 Power (W) = Current (A) × Voltage (V) × Power Factor
               </div>
@@ -205,7 +205,7 @@ const AmpsToWattsCalculator: React.FC<AmpsToWattsCalculatorProps> = ({ calculato
         </div>
         
         <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Common Conversions</h3>
+          <h3 className="calculator-section-header">Common Conversions</h3>
           
           <div className="overflow-x-auto">
             <table className="calculator-table">

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface MilligramsToGramsCalculatorProps {
   calculator?: Calculator;
@@ -56,7 +56,7 @@ const MilligramsToGramsCalculator: React.FC<MilligramsToGramsCalculatorProps> = 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
       <div className="p-6">
-        <h2 className={calculatorSectionHeaderClasses}>Milligrams to Grams Calculator</h2>
+        <h2 className="calculator-section-header">Milligrams to Grams Calculator</h2>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
           <div className="grid grid-cols-1 gap-4 mb-4">
@@ -68,7 +68,7 @@ const MilligramsToGramsCalculator: React.FC<MilligramsToGramsCalculatorProps> = 
                 <input
                   type="tel"
                   id="milligrams"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={milligramsStr} {...numericInputProps}
                   onChange={handleMilligramsChange}
                 />
@@ -83,7 +83,7 @@ const MilligramsToGramsCalculator: React.FC<MilligramsToGramsCalculatorProps> = 
             </label>
             <select
               id="precision"
-              className={inputClasses}
+              className="calculator-input"
               value={precision}
               onChange={handlePrecisionChange}
             >
@@ -97,25 +97,25 @@ const MilligramsToGramsCalculator: React.FC<MilligramsToGramsCalculatorProps> = 
         </div>
         
         <div className="calculator-card p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+          <h3 className="calculator-section-header">Conversion Results</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Milligrams</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Milligrams</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">
                 {milligramsStr === '' ? '0' : parseInt(milligramsStr).toLocaleString()} mg
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Grams</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Grams</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">
                 {grams.toFixed(precision)} g
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-              <div className={resultLabelClasses}>Conversion Formula</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
               <div className="text-md font-medium text-gray-300 mt-1">
                 {milligramsStr === '' ? '0' : parseInt(milligramsStr).toLocaleString()} milligrams × 0.001 = {grams.toFixed(precision)} grams
               </div>
@@ -127,7 +127,7 @@ const MilligramsToGramsCalculator: React.FC<MilligramsToGramsCalculatorProps> = 
         </div>
         
         <div className="mt-8 calculator-card p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Common Conversions</h3>
+          <h3 className="calculator-section-header">Common Conversions</h3>
           
           <div className="overflow-x-auto">
             <table className="calculator-table">

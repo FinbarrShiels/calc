@@ -1,888 +1,639 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import CompoundInterestChart from './CompoundInterestChart';
-import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+import React, { useState, useEffect, useRef } from 'react';
+import { Calculator } from '@/data/calculators';
+import { numericInputProps } from '@/utils/inputUtils';
+import { Line, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
 
-interface BreakdownRow {
-  year: number;
-  interest: number;
-  accruedInterest: number;
-  balance: number;
-  contributions?: number;
-  totalContributions?: number;
-  withdrawals?: number;
-  totalWithdrawals?: number;
-}
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface CompoundInterestCalculatorProps {
-  defaultCompoundFrequency?: string;
+  calculator?: Calculator;
 }
 
-const CompoundInterestCalculator = ({ defaultCompoundFrequency = 'Monthly (12/yr)' }: CompoundInterestCalculatorProps) => {
-  // State for form inputs
-  const [currency, setCurrency] = useState('$');
-  const [initialInvestmentStr, setInitialInvestmentStr] = useState('5000');
-  const [interestRateStr, setInterestRateStr] = useState('5');
-  const [compoundFrequency, setCompoundFrequency] = useState(defaultCompoundFrequency);
-  const [yearsStr, setYearsStr] = useState('5');
-  const [monthsStr, setMonthsStr] = useState('0');
-  const [additionalContribution, setAdditionalContribution] = useState('None');
-  const [depositAmountStr, setDepositAmountStr] = useState('0');
-  const [depositFrequency, setDepositFrequency] = useState('monthly');
-  const [depositTiming, setDepositTiming] = useState('Beginning');
-  const [annualDepositIncreaseStr, setAnnualDepositIncreaseStr] = useState('0');
-  const [withdrawalAmountStr, setWithdrawalAmountStr] = useState('0');
-  const [withdrawalFrequency, setWithdrawalFrequency] = useState('monthly');
-  const [annualWithdrawalIncreaseStr, setAnnualWithdrawalIncreaseStr] = useState('0');
+interface CurrencyOption {
+  value: string;
+  label: string;
+  symbol: string;
+}
 
-  // Derived numeric values for calculations
-  const initialInvestment = parseFloat(initialInvestmentStr) || 0;
-  const interestRate = parseFloat(interestRateStr) || 0;
-  const years = parseInt(yearsStr) || 0;
-  const months = parseInt(monthsStr) || 0;
-  const depositAmount = parseFloat(depositAmountStr) || 0;
-  const annualDepositIncrease = parseFloat(annualDepositIncreaseStr) || 0;
-  const withdrawalAmount = parseFloat(withdrawalAmountStr) || 0;
-  const annualWithdrawalIncrease = parseFloat(annualWithdrawalIncreaseStr) || 0;
+interface YearlyData {
+  year: number;
+  startBalance: number;
+  contribution: number;
+  interest: number;
+  endBalance: number;
+  totalContributions: number;
+  totalInterest: number;
+}
 
-  // State for calculation results
-  const [futureValue, setFutureValue] = useState(0);
-  const [totalInterest, setTotalInterest] = useState(0);
-  const [yearlyRate, setYearlyRate] = useState(0);
-  const [compoundedRate, setCompoundedRate] = useState(0);
-  const [rateOfReturn, setRateOfReturn] = useState(0);
-  const [timeToDouble, setTimeToDouble] = useState({ years: 0, months: 0 });
-  const [yearlyBreakdown, setYearlyBreakdown] = useState<BreakdownRow[]>([]);
-  const [monthlyBreakdown, setMonthlyBreakdown] = useState<BreakdownRow[]>([]);
-  const [breakdownType, setBreakdownType] = useState<'yearly' | 'monthly'>('yearly');
-  const [viewMode, setViewMode] = useState('table');
-  const [chartType, setChartType] = useState<'line' | 'bar' | 'stacked'>('line');
-  const [totalContributions, setTotalContributions] = useState(0);
+interface MonthlyData {
+  month: number;
+  year: number;
+  startBalance: number;
+  contribution: number;
+  interest: number;
+  endBalance: number;
+}
 
-  // Handle input changes with proper validation
-  const handleNumberInput = (
-    value: string, 
-    setter: React.Dispatch<React.SetStateAction<string>>,
-    allowNegative: boolean = false
-  ) => {
-    // Allow empty input
-    if (value === '') {
-      setter('');
-      return;
-    }
-    
-    // Handle special cases for decimal input
-    if (value === '.' || value === '0.') {
-      setter('0.');
-      return;
-    }
-    
-    if (value === '-' || value === '-.') {
-      if (allowNegative) {
-        setter('-');
-      }
-      return;
-    }
-    
-    // Validate the input format
-    const regex = allowNegative 
-      ? /^-?\d*\.?\d*$/ // Allow negative numbers
-      : /^\d*\.?\d*$/;  // Only positive numbers
-      
-    if (regex.test(value)) {
-      // Remove leading zeros for non-decimal numbers
-      if (value.indexOf('.') !== 1 && value.startsWith('0') && value.length > 1 && !value.startsWith('0.')) {
-        setter(value.replace(/^0+/, ''));
-      } else {
-        setter(value);
-      }
+type CompoundFrequency = 'annually' | 'semi-annually' | 'quarterly' | 'monthly' | 'daily';
+type ViewType = 'chart' | 'table';
+type ChartType = 'line' | 'bar';
+
+const CompoundInterestCalculator: React.FC<CompoundInterestCalculatorProps> = ({ calculator }) => {
+  // Currency options
+  const currencyOptions: CurrencyOption[] = [
+    { value: 'USD', label: 'USD ($)', symbol: '$' },
+    { value: 'EUR', label: 'EUR (€)', symbol: '€' },
+    { value: 'GBP', label: 'GBP (£)', symbol: '£' },
+    { value: 'JPY', label: 'JPY (¥)', symbol: '¥' },
+    { value: 'INR', label: 'INR (₹)', symbol: '₹' }
+  ];
+  
+  // Compound frequency options
+  const compoundFrequencyOptions = [
+    { value: 'annually', label: 'Annually', timesPerYear: 1 },
+    { value: 'semi-annually', label: 'Semi-Annually', timesPerYear: 2 },
+    { value: 'quarterly', label: 'Quarterly', timesPerYear: 4 },
+    { value: 'monthly', label: 'Monthly', timesPerYear: 12 },
+    { value: 'daily', label: 'Daily', timesPerYear: 365 }
+  ];
+  
+  // State for inputs
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
+  const [principal, setPrincipal] = useState<number>(10000);
+  const [annualContribution, setAnnualContribution] = useState<number>(1200);
+  const [contributionFrequency, setContributionFrequency] = useState<string>('monthly');
+  const [annualInterestRate, setAnnualInterestRate] = useState<number>(7);
+  const [compoundFrequency, setCompoundFrequency] = useState<CompoundFrequency>('monthly');
+  const [investmentPeriod, setInvestmentPeriod] = useState<number>(10);
+  
+  // State for results
+  const [finalBalance, setFinalBalance] = useState<number>(0);
+  const [totalContributions, setTotalContributions] = useState<number>(0);
+  const [totalInterest, setTotalInterest] = useState<number>(0);
+  const [yearlyData, setYearlyData] = useState<YearlyData[]>([]);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  
+  // View state
+  const [viewType, setViewType] = useState<ViewType>('chart');
+  const [chartType, setChartType] = useState<ChartType>('line');
+  
+  // Get currency symbol
+  const getCurrencySymbol = (): string => {
+    const currency = currencyOptions.find(c => c.value === selectedCurrency);
+    return currency ? currency.symbol : '$';
+  };
+  
+  // Handle currency change
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCurrency(e.target.value);
+  };
+  
+  // Handle compound frequency change
+  const handleCompoundFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCompoundFrequency(e.target.value as CompoundFrequency);
+  };
+  
+  // Handle contribution frequency change
+  const handleContributionFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setContributionFrequency(e.target.value);
+  };
+  
+  // Get number of compounds per year
+  const getCompoundsPerYear = (): number => {
+    const frequency = compoundFrequencyOptions.find(f => f.value === compoundFrequency);
+    return frequency ? frequency.timesPerYear : 1;
+  };
+  
+  // Get number of contributions per year
+  const getContributionsPerYear = (): number => {
+    switch (contributionFrequency) {
+      case 'annually': return 1;
+      case 'semi-annually': return 2;
+      case 'quarterly': return 4;
+      case 'monthly': return 12;
+      case 'bi-weekly': return 26;
+      case 'weekly': return 52;
+      default: return 12;
     }
   };
 
   // Calculate compound interest
   const calculateCompoundInterest = () => {
-    // Get compound frequency number
-    let compoundsPerYear = 12; // Default to monthly
-    if (compoundFrequency === 'Annually (1/yr)') compoundsPerYear = 1;
-    if (compoundFrequency === 'Semi-annually (2/yr)') compoundsPerYear = 2;
-    if (compoundFrequency === 'Quarterly (4/yr)') compoundsPerYear = 4;
-    if (compoundFrequency === 'Monthly (12/yr)') compoundsPerYear = 12;
-    if (compoundFrequency === 'Daily (365/yr)') compoundsPerYear = 365;
-
-    // Calculate total periods
-    const totalPeriods = years + (months / 12);
+    const compoundsPerYear = getCompoundsPerYear();
+    const contributionsPerYear = getContributionsPerYear();
+    const contributionPerPeriod = annualContribution / contributionsPerYear;
+    const ratePerPeriod = annualInterestRate / 100 / compoundsPerYear;
+    const totalMonths = investmentPeriod * 12;
     
-    // Calculate compound interest
-    const rate = interestRate / 100;
-    const compoundRate = Math.pow(1 + (rate / compoundsPerYear), compoundsPerYear) - 1;
+    let balance = principal;
+    let totalContrib = principal;
+    let totalInt = 0;
     
-    // Calculate contribution frequency
-    let contributionsPerYear = 12; // Default to monthly
-    if (depositFrequency === 'annually') contributionsPerYear = 1;
-    if (depositFrequency === 'quarterly') contributionsPerYear = 4;
-    if (depositFrequency === 'monthly') contributionsPerYear = 12;
+    const monthlyDataArray: MonthlyData[] = [];
+    const yearlyDataArray: YearlyData[] = [];
     
-    // Calculate withdrawal frequency
-    let withdrawalsPerYear = 12; // Default to monthly
-    if (withdrawalFrequency === 'annually') withdrawalsPerYear = 1;
-    if (withdrawalFrequency === 'quarterly') withdrawalsPerYear = 4;
-    if (withdrawalFrequency === 'monthly') withdrawalsPerYear = 12;
-    
-    // Calculate breakdown
-    const calculatedYearlyBreakdown: BreakdownRow[] = [];
-    const calculatedMonthlyBreakdown: BreakdownRow[] = [];
-    
-    let currentBalance = initialInvestment;
-    let accruedInterest = 0;
-    let totalContributions = 0;
-    let totalWithdrawals = 0;
-    let currentDepositAmount = depositAmount;
-    let currentWithdrawalAmount = withdrawalAmount;
-    
-    // Add initial row to both breakdowns
-    calculatedYearlyBreakdown.push({
+    // Initialize yearly data for year 0
+    yearlyDataArray.push({
       year: 0,
+      startBalance: principal,
+      contribution: 0,
       interest: 0,
-      accruedInterest: 0,
-      balance: currentBalance,
-      contributions: 0,
-      totalContributions: 0,
-      withdrawals: 0,
-      totalWithdrawals: 0
+      endBalance: principal,
+      totalContributions: principal,
+      totalInterest: 0
     });
     
-    calculatedMonthlyBreakdown.push({
-      year: 0,
-      interest: 0,
-      accruedInterest: 0,
-      balance: currentBalance,
-      contributions: 0,
-      totalContributions: 0,
-      withdrawals: 0,
-      totalWithdrawals: 0
-    });
-    
-    // Total months to calculate
-    const totalMonths = years * 12 + months;
-    
-    // For monthly breakdown
+    // Calculate monthly data
     for (let month = 1; month <= totalMonths; month++) {
-      const currentYear = Math.floor(month / 12);
-      const currentMonth = month % 12 === 0 ? 12 : month % 12;
-      
+      const currentYear = Math.floor((month - 1) / 12) + 1;
+      const monthOfYear = ((month - 1) % 12) + 1;
+      const startBalance = balance;
+      let monthlyContribution = 0;
       let monthlyInterest = 0;
-      let monthlyContributions = 0;
-      let monthlyWithdrawals = 0;
       
-      // For each compound period in the month
-      const periodsPerMonth = compoundsPerYear / 12;
-      for (let period = 1; period <= periodsPerMonth; period++) {
-        // Apply contributions at the beginning of period if enabled
-        if ((additionalContribution === 'Deposits' || additionalContribution === 'Both') && depositAmount > 0) {
-          if (depositTiming === 'Beginning') {
-            // Calculate how many contributions to make in this compound period
-            const contributionsThisPeriod = contributionsPerYear / compoundsPerYear;
-            const contributionAmount = currentDepositAmount * contributionsThisPeriod;
-            
-            if (contributionAmount > 0) {
-              currentBalance += contributionAmount;
-              monthlyContributions += contributionAmount;
-              totalContributions += contributionAmount;
-            }
-          }
-        }
-        
-        // Apply withdrawals at the beginning of period if enabled
-        if ((additionalContribution === 'Withdrawals' || additionalContribution === 'Both') && withdrawalAmount > 0) {
-          // Calculate how many withdrawals to make in this compound period
-          const withdrawalsThisPeriod = withdrawalsPerYear / compoundsPerYear;
-          const withdrawalAmountThisPeriod = currentWithdrawalAmount * withdrawalsThisPeriod;
-          
-          if (withdrawalAmountThisPeriod > 0 && currentBalance > withdrawalAmountThisPeriod) {
-            currentBalance -= withdrawalAmountThisPeriod;
-            monthlyWithdrawals += withdrawalAmountThisPeriod;
-            totalWithdrawals += withdrawalAmountThisPeriod;
-          }
-        }
-        
-        // Calculate interest for this period
-        const periodInterest = currentBalance * (rate / compoundsPerYear);
-        monthlyInterest += periodInterest;
-        currentBalance += periodInterest;
-        
-        // Apply contributions at the end of period if enabled
-        if ((additionalContribution === 'Deposits' || additionalContribution === 'Both') && depositAmount > 0) {
-          if (depositTiming === 'End') {
-            // Calculate how many contributions to make in this compound period
-            const contributionsThisPeriod = contributionsPerYear / compoundsPerYear;
-            const contributionAmount = currentDepositAmount * contributionsThisPeriod;
-            
-            if (contributionAmount > 0) {
-              currentBalance += contributionAmount;
-              monthlyContributions += contributionAmount;
-              totalContributions += contributionAmount;
-            }
-          }
-        }
+      // Add contribution if this is a contribution month
+      if (month % (12 / contributionsPerYear) === 0) {
+        balance += contributionPerPeriod;
+        monthlyContribution = contributionPerPeriod;
+        totalContrib += contributionPerPeriod;
       }
       
-      accruedInterest += monthlyInterest;
-      
-      // Increase deposit/withdrawal amount at the beginning of each year
-      if (currentMonth === 1 && month > 12) {
-        if (annualDepositIncrease > 0) {
-          currentDepositAmount += currentDepositAmount * (annualDepositIncrease / 100);
-        }
-        
-        if (annualWithdrawalIncrease > 0) {
-          currentWithdrawalAmount += currentWithdrawalAmount * (annualWithdrawalIncrease / 100);
-        }
+      // Apply compound interest
+      if (month % (12 / compoundsPerYear) === 0) {
+        const interest = balance * ratePerPeriod;
+        balance += interest;
+        monthlyInterest = interest;
+        totalInt += interest;
       }
       
-      // Add to monthly breakdown
-      calculatedMonthlyBreakdown.push({
-        year: currentYear + (currentMonth / 12),
-        interest: parseFloat(monthlyInterest.toFixed(2)),
-        accruedInterest: parseFloat(accruedInterest.toFixed(2)),
-        balance: parseFloat(currentBalance.toFixed(2)),
-        contributions: parseFloat(monthlyContributions.toFixed(2)),
-        totalContributions: parseFloat(totalContributions.toFixed(2)),
-        withdrawals: parseFloat(monthlyWithdrawals.toFixed(2)),
-        totalWithdrawals: parseFloat(totalWithdrawals.toFixed(2))
+      // Store monthly data
+      monthlyDataArray.push({
+        month: monthOfYear,
+        year: currentYear,
+        startBalance,
+        contribution: monthlyContribution,
+        interest: monthlyInterest,
+        endBalance: balance
       });
       
-      // If this is the last month of a year, add to yearly breakdown
-      if (currentMonth === 12 || month === totalMonths) {
-        calculatedYearlyBreakdown.push({
-          year: currentYear + (currentMonth === 12 ? 1 : currentMonth / 12),
-          interest: parseFloat(monthlyInterest.toFixed(2)),
-          accruedInterest: parseFloat(accruedInterest.toFixed(2)),
-          balance: parseFloat(currentBalance.toFixed(2)),
-          contributions: parseFloat(monthlyContributions.toFixed(2)),
-          totalContributions: parseFloat(totalContributions.toFixed(2)),
-          withdrawals: parseFloat(monthlyWithdrawals.toFixed(2)),
-          totalWithdrawals: parseFloat(totalWithdrawals.toFixed(2))
+      // If this is the last month of a year, store yearly data
+      if (monthOfYear === 12 || month === totalMonths) {
+        yearlyDataArray.push({
+          year: currentYear,
+          startBalance: yearlyDataArray[yearlyDataArray.length - 1].endBalance,
+          contribution: totalContrib - yearlyDataArray[yearlyDataArray.length - 1].totalContributions,
+          interest: totalInt - (yearlyDataArray[yearlyDataArray.length - 1].totalInterest || 0),
+          endBalance: balance,
+          totalContributions: totalContrib,
+          totalInterest: totalInt
         });
       }
     }
     
-    // Calculate future value (which is the final balance)
-    const futureVal = currentBalance;
-    
-    // Set results
-    setFutureValue(parseFloat(futureVal.toFixed(2)));
-    setTotalInterest(parseFloat((accruedInterest).toFixed(2)));
-    setYearlyRate(interestRate);
-    setCompoundedRate(parseFloat((compoundRate * 100).toFixed(2)));
-    setRateOfReturn(parseFloat(((futureVal / initialInvestment - 1) * 100).toFixed(2)));
-    setTotalContributions(parseFloat(totalContributions.toFixed(2)));
-    
-    // Calculate time to double
-    const timeToDoubleYears = Math.log(2) / Math.log(1 + compoundRate);
-    const doubleYears = Math.floor(timeToDoubleYears);
-    const doubleMonths = Math.round((timeToDoubleYears - doubleYears) * 12);
-    setTimeToDouble({ years: doubleYears, months: doubleMonths });
-    
-    // Set breakdowns
-    setYearlyBreakdown(calculatedYearlyBreakdown);
-    setMonthlyBreakdown(calculatedMonthlyBreakdown);
+    setMonthlyData(monthlyDataArray);
+    setYearlyData(yearlyDataArray);
+    setFinalBalance(balance);
+    setTotalContributions(totalContrib);
+    setTotalInterest(totalInt);
   };
-
-  // Get the current breakdown based on the selected type
-  const getCurrentBreakdown = () => {
-    return breakdownType === 'yearly' ? yearlyBreakdown : monthlyBreakdown;
-  };
-
-  // Format period label based on breakdown type
-  const formatPeriodLabel = (row: BreakdownRow) => {
-    if (row.year === 0) {
-      return "Starting Balance";
-    }
-    
-    if (breakdownType === 'yearly') {
-      return `Year ${Math.floor(row.year)}`;
-    } else {
-      const yearPart = Math.floor(row.year);
-      const monthPart = Math.round((row.year - yearPart) * 12);
-      return `Year ${yearPart}, Month ${monthPart || 12}`;
-    }
-  };
-
-  // Format currency
-  const formatCurrency = (value: number) => {
-    return `${currency}${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
-
-  // Calculate on input change
+  
+  // Calculate when inputs change
   useEffect(() => {
     calculateCompoundInterest();
-  }, [
-    initialInvestmentStr, 
-    interestRateStr, 
-    compoundFrequency, 
-    yearsStr, 
-    monthsStr, 
-    additionalContribution,
-    depositAmountStr,
-    depositFrequency,
-    depositTiming,
-    annualDepositIncreaseStr,
-    withdrawalAmountStr,
-    withdrawalFrequency,
-    annualWithdrawalIncreaseStr
-  ]);
+  }, [principal, annualContribution, contributionFrequency, annualInterestRate, compoundFrequency, investmentPeriod]);
+  
+  // Format currency
+  const formatCurrency = (value: number): string => {
+    return getCurrencySymbol() + value.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+  };
+  
+  // Chart data for balance growth
+  const balanceChartData = {
+    labels: yearlyData.map(data => `Year ${data.year}`),
+    datasets: [
+      {
+        label: 'Balance',
+        data: yearlyData.map(data => data.endBalance),
+        backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
+        borderColor: '#3b82f6', // blue-500
+        borderWidth: 1,
+        fill: chartType === 'line',
+        tension: 0.1
+      }
+    ]
+  };
+  
+  // Chart data for breakdown
+  const breakdownChartData = {
+    labels: yearlyData.map(data => `Year ${data.year}`),
+    datasets: [
+      {
+        label: 'Principal',
+        data: yearlyData.map(data => principal),
+        backgroundColor: 'rgba(59, 130, 246, 0.5)', // blue-500 with opacity
+        borderColor: '#3b82f6', // blue-500
+        borderWidth: 1,
+        stack: 'Stack 0'
+      },
+      {
+        label: 'Contributions',
+        data: yearlyData.map(data => data.totalContributions - principal),
+        backgroundColor: 'rgba(139, 92, 246, 0.5)', // purple-500 with opacity
+        borderColor: '#8b5cf6', // purple-500
+        borderWidth: 1,
+        stack: 'Stack 0'
+      },
+      {
+        label: 'Interest',
+        data: yearlyData.map(data => data.totalInterest),
+        backgroundColor: 'rgba(16, 185, 129, 0.5)', // green-500 with opacity
+        borderColor: '#10b981', // green-500
+        borderWidth: 1,
+        stack: 'Stack 0'
+      }
+    ]
+  };
+  
+  // Chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+        },
+        ticks: {
+          color: '#e5e7eb', // text-gray-200
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)', // lighter grid lines for dark background
+        },
+        ticks: {
+          color: '#e5e7eb', // text-gray-200
+          callback: function(value: any) {
+            return getCurrencySymbol() + value.toLocaleString();
+          }
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: '#e5e7eb', // text-gray-200
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.9)', // bg-gray-900 with opacity
+        titleColor: '#f9fafb', // text-gray-50
+        bodyColor: '#f3f4f6', // text-gray-100
+        padding: 10,
+        borderColor: 'rgba(75, 85, 99, 0.3)', // gray-600 with opacity
+        borderWidth: 1,
+        callbacks: {
+          label: function(context: any) {
+            const label = context.dataset.label || '';
+            const value = context.raw;
+            return `${label}: ${getCurrencySymbol()}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          }
+        }
+      }
+    }
+  };
+  
+  // Stacked chart options
+  const stackedChartOptions = {
+    ...chartOptions,
+    scales: {
+      ...chartOptions.scales,
+      x: {
+        ...chartOptions.scales.x,
+        stacked: true
+      },
+      y: {
+        ...chartOptions.scales.y,
+        stacked: true
+      }
+    }
+  };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 w-full">
-      {/* Left side - Input form */}
-      <div className="w-full lg:w-2/5 calculator-card text-white dark:text-gray-900 p-4 sm:p-6 rounded-lg">
-        <div className="mb-6">
-          <label className={labelClasses}>Currency:</label>
-          <div className="grid grid-cols-6 gap-1">
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '$' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('$')}
-            >
-              $
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '€' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('€')}
-            >
-              €
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '£' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('£')}
-            >
-              £
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '₹' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('₹')}
-            >
-              ₹
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-sm sm:text-base ${currency === '¥' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setCurrency('¥')}
-            >
-              ¥
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded bg-muted hover:bg-muted/80`}
-            >
-              ...
-            </button>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className={labelClasses}>Initial investment:</label>
-          <div className="flex">
-            <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-l">{currency}</span>
-            <input
-              type="tel"
-              value={initialInvestmentStr}
-              onChange={(e) => handleNumberInput(e.target.value, setInitialInvestmentStr, false)} {...decimalInputProps}
-              className={inputClasses}
-            />
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className={labelClasses}>Interest rate:</label>
-          <div className="flex">
-            <input
-              type="tel"
-              value={interestRateStr}
-              onChange={(e) => handleNumberInput(e.target.value, setInterestRateStr, true)} {...decimalInputProps}
-              className={inputClasses}
-            />
-            <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4">%</span>
+    <div className="bg-gray-800 text-white rounded-lg shadow-xl p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Input Section */}
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <h2 className="text-xl font-bold text-white mb-4">Compound Interest Calculator</h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="currency" className="block text-sm font-medium text-gray-300 mb-1">
+                Currency
+              </label>
             <select 
-              className="bg-gray-100 dark:bg-gray-800 text-white dark:text-gray-900 py-2 px-4 rounded-r focus:outline-none focus:ring-2 focus:ring-blue-500"
-              defaultValue="annual"
-            >
-              <option value="annual">annual</option>
+                id="currency"
+                value={selectedCurrency}
+                onChange={handleCurrencyChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {currencyOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
             </select>
-            <button className="ml-2 bg-gray-100 dark:bg-gray-800 hover:bg-muted/80 text-white dark:text-gray-900 py-2 px-4 rounded">
-              <span>−</span>
-            </button>
-          </div>
         </div>
 
-        <div className="mb-6">
-          <label className={labelClasses}>Compound frequency:</label>
-          <div className="flex">
-            <select
-              value={compoundFrequency}
-              onChange={(e) => setCompoundFrequency(e.target.value)}
-              className={inputClasses}
-            >
-              <option value="Monthly (12/yr)">Monthly (12/yr)</option>
-              <option value="Annually (1/yr)">Annually (1/yr)</option>
-              <option value="Semi-annually (2/yr)">Semi-annually (2/yr)</option>
-              <option value="Quarterly (4/yr)">Quarterly (4/yr)</option>
-              <option value="Daily (365/yr)">Daily (365/yr)</option>
-            </select>
-            <button className="ml-2 bg-gray-100 dark:bg-gray-800 hover:bg-muted/80 text-white dark:text-gray-900 py-2 px-4 rounded">
-              <span>?</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="mb-6 grid grid-cols-2 gap-4">
           <div>
-            <label className={labelClasses}>Years:</label>
-            <input
-              type="tel"
-              value={yearsStr}
-              onChange={(e) => handleNumberInput(e.target.value, setYearsStr, false)} {...decimalInputProps}
-              className={inputClasses}
-            />
+              <label htmlFor="principal" className="block text-sm font-medium text-gray-300 mb-1">
+                Initial Principal
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
+                </div>
+                    <input
+                  id="principal"
+                      type="tel"
+                  value={principal} {...numericInputProps}
+                  onChange={(e) => setPrincipal(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label htmlFor="annualContribution" className="block text-sm font-medium text-gray-300 mb-1">
+                Annual Contribution
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">{getCurrencySymbol()}</span>
+                </div>
+                <input
+                  id="annualContribution"
+                  type="tel"
+                  value={annualContribution} {...numericInputProps}
+                  onChange={(e) => setAnnualContribution(Number(e.target.value))}
+                  min="0"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-8 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label htmlFor="contributionFrequency" className="block text-sm font-medium text-gray-300 mb-1">
+                Contribution Frequency
+              </label>
+              <select
+                id="contributionFrequency"
+                value={contributionFrequency}
+                onChange={handleContributionFrequencyChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="annually">Annually</option>
+                <option value="semi-annually">Semi-Annually</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="monthly">Monthly</option>
+                <option value="bi-weekly">Bi-Weekly</option>
+                <option value="weekly">Weekly</option>
+              </select>
+            </div>
+            
+            <div>
+              <label htmlFor="annualInterestRate" className="block text-sm font-medium text-gray-300 mb-1">
+                Annual Interest Rate
+              </label>
+              <div className="relative">
+                <input
+                  id="annualInterestRate"
+                  type="tel"
+                  value={annualInterestRate} {...numericInputProps}
+                  onChange={(e) => setAnnualInterestRate(Number(e.target.value))}
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span className="text-gray-400">%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <label htmlFor="compoundFrequency" className="block text-sm font-medium text-gray-300 mb-1">
+                Compound Frequency
+              </label>
+              <select
+                id="compoundFrequency"
+                value={compoundFrequency}
+                onChange={handleCompoundFrequencyChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {compoundFrequencyOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label htmlFor="investmentPeriod" className="block text-sm font-medium text-gray-300 mb-1">
+                Investment Period (years)
+              </label>
+              <input
+                id="investmentPeriod"
+                type="tel"
+                value={investmentPeriod} {...numericInputProps}
+                onChange={(e) => setInvestmentPeriod(Number(e.target.value))}
+                min="1"
+                max="50"
+                className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
-          <div>
-            <label className={labelClasses}>Months:</label>
-            <input
-              type="tel"
-              value={monthsStr}
-              onChange={(e) => handleNumberInput(e.target.value, setMonthsStr, false)} {...decimalInputProps}
-              className={inputClasses}
-            />
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className={labelClasses}>Additional contributions: (optional)</label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-xs sm:text-sm ${additionalContribution === 'None' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setAdditionalContribution('None')}
-            >
-              None
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-xs sm:text-sm ${additionalContribution === 'Deposits' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setAdditionalContribution('Deposits')}
-            >
-              Deposits
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-xs sm:text-sm ${additionalContribution === 'Withdrawals' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setAdditionalContribution('Withdrawals')}
-            >
-              Withdrawals
-            </button>
-            <button 
-              className={`py-2 px-2 sm:px-4 rounded text-xs sm:text-sm ${additionalContribution === 'Both' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-              onClick={() => setAdditionalContribution('Both')}
-            >
-              Both
-            </button>
-          </div>
-        </div>
-
-        {additionalContribution !== 'None' && (
-          <>
-            {(additionalContribution === 'Deposits' || additionalContribution === 'Both') && (
-              <>
-                <div className="mb-6">
-                  <label className={labelClasses}>Deposit amount: (optional)</label>
-                  <div className="flex">
-                    <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-l">{currency}</span>
-                    <input
-                      type="tel"
-                      value={depositAmountStr}
-                      onChange={(e) => handleNumberInput(e.target.value, setDepositAmountStr, false)} {...decimalInputProps}
-                      className={inputClasses}
-                    />
-                    <select
-                      value={depositFrequency}
-                      onChange={(e) => setDepositFrequency(e.target.value)}
-                      className="bg-gray-100 dark:bg-gray-800 text-white dark:text-gray-900 py-2 px-4 rounded-r focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="monthly">monthly</option>
-                      <option value="quarterly">quarterly</option>
-                      <option value="annually">annually</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <label className={labelClasses}>Deposits made at what point in period?</label>
-                  <div className="grid grid-cols-2 gap-1">
-                    <button 
-                      className={`py-2 px-4 rounded ${depositTiming === 'Beginning' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-                      onClick={() => setDepositTiming('Beginning')}
-                    >
-                      Beginning
-                    </button>
-                    <button 
-                      className={`py-2 px-4 rounded ${depositTiming === 'End' ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:bg-gray-850/80'}`}
-                      onClick={() => setDepositTiming('End')}
-                    >
-                      End
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <label className={labelClasses}>Annual deposit % increase? (optional)</label>
-                  <div className="flex">
-                    <input
-                      type="tel"
-                      value={annualDepositIncreaseStr}
-                      onChange={(e) => handleNumberInput(e.target.value, setAnnualDepositIncreaseStr, false)} {...decimalInputProps}
-                      className={inputClasses}
-                    />
-                    <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-r">%</span>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {(additionalContribution === 'Withdrawals' || additionalContribution === 'Both') && (
-              <>
-                <div className="mb-6">
-                  <label className={labelClasses}>Withdrawal amount: (optional)</label>
-                  <div className="flex">
-                    <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-l">{currency}</span>
-                    <input
-                      type="tel"
-                      value={withdrawalAmountStr}
-                      onChange={(e) => handleNumberInput(e.target.value, setWithdrawalAmountStr, false)} {...decimalInputProps}
-                      className={inputClasses}
-                    />
-                    <select
-                      value={withdrawalFrequency}
-                      onChange={(e) => setWithdrawalFrequency(e.target.value)}
-                      className="bg-gray-100 dark:bg-gray-800 text-white dark:text-gray-900 py-2 px-4 rounded-r focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="monthly">monthly {currency}</option>
-                      <option value="quarterly">quarterly {currency}</option>
-                      <option value="annually">annually {currency}</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <label className={labelClasses}>Annual withdrawal % increase? (optional)</label>
-                  <div className="flex">
-                    <input
-                      type="tel"
-                      value={annualWithdrawalIncreaseStr}
-                      onChange={(e) => handleNumberInput(e.target.value, setAnnualWithdrawalIncreaseStr, false)} {...decimalInputProps}
-                      className={inputClasses}
-                    />
-                    <span className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-r">%</span>
-                  </div>
-                </div>
-              </>
-            )}
-          </>
-        )}
-
-        <button
-          type="button"
-          onClick={calculateCompoundInterest}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-primary/90 text-white dark:text-gray-900 font-semibold rounded-md transition duration-200 mt-4"
-        >
-          Calculate
-        </button>
-      </div>
-
-      {/* Right side - Results */}
-      <div className="w-full lg:w-3/5 bg-white dark:bg-gray-800 text-white dark:text-gray-900 p-4 sm:p-6 rounded-lg">
-        <div className="mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <div>
-              <p className="text-gray-400 mb-1 text-sm sm:text-base">Future value</p>
-              <div className="flex items-center">
-                <h3 className="text-xl sm:text-3xl text-orange-500 font-bold">{formatCurrency(futureValue)}</h3>
-                <button className="ml-2 text-gray-400 hover:text-gray-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
-                    <path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM15 11h2a1 1 0 110 2h-2v-2z" />
-                  </svg>
-                </button>
+          
+          <div className="mt-6 bg-gray-800 p-4 rounded-md border border-gray-700">
+            <h3 className="text-lg font-medium mb-3 text-blue-400">Investment Summary</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-400 text-sm">Final Balance</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(finalBalance)}</p>
               </div>
-            </div>
-            
-            <div>
-              <p className="text-gray-400 mb-1 text-sm sm:text-base">Yearly rate → Compounded rate</p>
-              <div className="flex items-center">
-                <h3 className="text-xl sm:text-3xl text-gray-200 font-bold">{yearlyRate}%</h3>
-                <span className="mx-2 text-gray-400">→</span>
-                <h3 className="text-xl sm:text-3xl text-orange-500 font-bold">{compoundedRate}%</h3>
-                <button className="ml-2 text-gray-400 hover:text-gray-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
+              <div>
+                <p className="text-gray-400 text-sm">Total Contributions</p>
+                <p className="text-xl font-semibold text-white">{formatCurrency(totalContributions)}</p>
               </div>
-            </div>
-            
-            <div>
-              <p className="text-gray-400 mb-1 text-sm sm:text-base">Total interest earned</p>
-              <div className="flex items-center">
-                <h3 className="text-xl sm:text-3xl text-orange-500 font-bold">{formatCurrency(totalInterest)}</h3>
-                <button className="ml-2 text-gray-400 hover:text-gray-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
-                    <path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM15 11h2a1 1 0 110 2h-2v-2z" />
-                  </svg>
-                </button>
+              <div>
+                <p className="text-gray-400 text-sm">Total Interest Earned</p>
+                <p className="text-xl font-semibold text-green-400">{formatCurrency(totalInterest)}</p>
               </div>
-            </div>
-            
-            <div>
-              <p className="text-gray-400 mb-1 text-sm sm:text-base">All-time rate of return (RoR)</p>
-              <div className="flex items-center">
-                <span className="text-green-500 mr-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                </span>
-                <h3 className="text-xl sm:text-3xl text-gray-200 font-bold">{rateOfReturn}%</h3>
-                <button className="ml-2 text-gray-400 hover:text-gray-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            
-            <div>
-              <p className="text-gray-400 mb-1 text-sm sm:text-base">Initial balance</p>
-              <div className="flex items-center">
-                <h3 className="text-xl sm:text-3xl text-blue-500 font-bold">{formatCurrency(initialInvestment)}</h3>
-              </div>
-            </div>
-            
-            <div>
-              <p className="text-gray-400 mb-1 text-sm sm:text-base">Time needed to double investment</p>
-              <div className="flex items-center">
-                <h3 className="text-xl sm:text-3xl text-gray-200 font-bold">{timeToDouble.years} years, {timeToDouble.months} months</h3>
+              <div>
+                <p className="text-gray-400 text-sm">Interest to Contribution Ratio</p>
+                <p className="text-xl font-semibold text-white">
+                  {totalContributions > 0 ? `${(totalInterest / totalContributions * 100).toFixed(2)}%` : '0%'}
+                </p>
               </div>
             </div>
           </div>
         </div>
         
-        <div className="mb-4">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 space-y-4 lg:space-y-0">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-2 lg:space-y-0 lg:space-x-3">
-              <p className="text-gray-400 text-sm font-medium mb-1 lg:mb-0">Breakdown choice:</p>
-              <div className="inline-flex rounded-md shadow-sm">
+        {/* Results Section */}
+        <div className="bg-gray-900 rounded-lg p-5 border border-gray-700">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">Results</h2>
+            <div className="flex space-x-2">
                 <button
-                  type="button"
-                  onClick={() => setBreakdownType('yearly')}
-                  className={`relative inline-flex items-center px-4 py-2 rounded-l-md border ${
-                    breakdownType === 'yearly'
-                      ? 'bg-blue-600 text-gray-900 dark:text-white-foreground border-blue-600 z-10'
-                      : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                  } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                >
-                  Yearly
+                onClick={() => setViewType('chart')}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewType === 'chart' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                Chart
                 </button>
                 <button
-                  type="button"
-                  onClick={() => setBreakdownType('monthly')}
-                  className={`relative inline-flex items-center px-4 py-2 rounded-r-md border ${
-                    breakdownType === 'monthly'
-                      ? 'bg-blue-600 text-gray-900 dark:text-white-foreground border-blue-600 z-10'
-                      : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                  } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                >
-                  Monthly
+                onClick={() => setViewType('table')}
+                className={`px-3 py-1 rounded-md text-sm font-medium ${
+                  viewType === 'table' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                Table
                 </button>
               </div>
             </div>
             
-            <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-2 lg:space-y-0 lg:space-x-3">
-              <p className="text-gray-400 text-sm font-medium mb-1 lg:mb-0">View mode:</p>
-              <div className="inline-flex rounded-md shadow-sm">
+          {viewType === 'chart' && (
+            <div className="space-y-6">
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-medium text-blue-400">Balance Growth</h3>
+                  <div className="flex space-x-2">
                 <button
-                  type="button"
-                  onClick={() => setViewMode('table')}
-                  className={`relative inline-flex items-center px-4 py-2 rounded-l-md border ${
-                    viewMode === 'table'
-                      ? 'bg-blue-600 text-gray-900 dark:text-white-foreground border-blue-600 z-10'
-                      : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                  } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                >
-                  Table
+                      onClick={() => setChartType('line')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        chartType === 'line' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      Line
                 </button>
                 <button
-                  type="button"
-                  onClick={() => setViewMode('chart')}
-                  className={`relative inline-flex items-center px-4 py-2 border-t border-b ${
-                    viewMode === 'chart'
-                      ? 'bg-blue-600 text-gray-900 dark:text-white-foreground border-blue-600 z-10'
-                      : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                  } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                >
-                  Chart
+                      onClick={() => setChartType('bar')}
+                      className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        chartType === 'bar' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      Bar
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('summary')}
-                  className={`relative inline-flex items-center px-4 py-2 rounded-r-md border ${
-                    viewMode === 'summary'
-                      ? 'bg-blue-600 text-gray-900 dark:text-white-foreground border-blue-600 z-10'
-                      : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                  } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                >
-                  Summary
-                </button>
+                  </div>
+                </div>
+                <div className="h-80 w-full">
+                  {chartType === 'line' ? (
+                    <Line data={balanceChartData} options={chartOptions} />
+                  ) : (
+                    <Bar data={balanceChartData} options={chartOptions} />
+                  )}
+                </div>
               </div>
+              
+              <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                <h3 className="text-lg font-medium text-blue-400 mb-2">Investment Breakdown</h3>
+                <div className="h-80 w-full">
+                  <Bar data={breakdownChartData} options={stackedChartOptions} />
             </div>
           </div>
           
-          <h3 className="text-xl font-bold mb-4">Yearly breakdown</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Final Balance</h3>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(finalBalance)}</p>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Total Contributions</h3>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(totalContributions)}</p>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Total Interest</h3>
+                  <p className="text-2xl font-bold text-green-400">{formatCurrency(totalInterest)}</p>
+                </div>
+                
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-400">Investment Period</h3>
+                  <p className="text-2xl font-bold text-white">{investmentPeriod} years</p>
+                </div>
+              </div>
+            </div>
+          )}
           
-          {viewMode === 'table' && (
-            <div className="overflow-x-auto">
-              <table className="calculator-table">
-                <thead className="bg-white dark:bg-gray-800">
+          {viewType === 'table' && (
+            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 overflow-x-auto">
+              <h3 className="text-lg font-medium text-blue-400 mb-4">Yearly Breakdown</h3>
+              <table className="min-w-full divide-y divide-gray-700">
+                <thead>
                   <tr>
-                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider">
-                      Period
-                    </th>
-                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider">
-                      Interest
-                    </th>
-                    <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider">
-                      Balance
-                    </th>
-                    {(additionalContribution === 'Deposits' || additionalContribution === 'Both') && (
-                      <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider">
-                        Contributions
-                      </th>
-                    )}
-                    {(additionalContribution === 'Withdrawals' || additionalContribution === 'Both') && (
-                      <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider">
-                        Withdrawals
-                      </th>
-                    )}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Year</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Start Balance</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Contribution</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Interest</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">End Balance</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-800">
-                  {getCurrentBreakdown().map((row, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-card' : 'bg-card'}>
-                      <td className="calculator-table-cell">
-                        {formatPeriodLabel(row)}
-                      </td>
-                      <td className="calculator-table-cell">
-                        {formatCurrency(row.interest)}
-                      </td>
-                      <td className="calculator-table-cell">
-                        {formatCurrency(row.balance)}
-                      </td>
-                      {(additionalContribution === 'Deposits' || additionalContribution === 'Both') && (
-                        <td className="calculator-table-cell">
-                          {formatCurrency(row.contributions || 0)}
-                        </td>
-                      )}
-                      {(additionalContribution === 'Withdrawals' || additionalContribution === 'Both') && (
-                        <td className="calculator-table-cell">
-                          {formatCurrency(row.withdrawals || 0)}
-                        </td>
-                      )}
+                <tbody className="divide-y divide-gray-700">
+                  {yearlyData.map((data, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'}>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{data.year}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{formatCurrency(data.startBalance)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-300">{formatCurrency(data.contribution)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-green-400">{formatCurrency(data.interest)}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-blue-400">{formatCurrency(data.endBalance)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-          
-          {viewMode === 'chart' && (
-            <div>
-              <div className="mb-4 flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-2 lg:space-y-0">
-                <p className="text-gray-400 text-sm font-medium mb-1 lg:mb-0">Chart type:</p>
-                <div className="inline-flex rounded-md shadow-sm">
-                  <button
-                    type="button"
-                    onClick={() => setChartType('line')}
-                    className={`relative inline-flex items-center px-4 py-2 rounded-l-md border ${
-                      chartType === 'line'
-                        ? 'bg-blue-600 text-gray-900 dark:text-white-foreground border-blue-600 z-10'
-                        : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                    } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                  >
-                    Line
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setChartType('bar')}
-                    className={`relative inline-flex items-center px-4 py-2 border-t border-b ${
-                      chartType === 'bar'
-                        ? 'bg-blue-600 text-gray-900 dark:text-white-foreground border-blue-600 z-10'
-                        : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                    } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                  >
-                    Bar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setChartType('stacked')}
-                    className={`relative inline-flex items-center px-4 py-2 rounded-r-md border ${
-                      chartType === 'stacked'
-                        ? 'bg-blue-600 text-gray-900 dark:text-white-foreground border-blue-600 z-10'
-                        : 'bg-white dark:bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-100 dark:bg-gray-800'
-                    } text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500`}
-                  >
-                    Stacked
-                  </button>
-                </div>
-              </div>
-              <CompoundInterestChart 
-                breakdown={getCurrentBreakdown()}
-                currency={currency}
-                initialInvestment={initialInvestment}
-                chartType={chartType}
-                hasContributions={additionalContribution === 'Deposits' || additionalContribution === 'Both'}
-                totalContributions={totalContributions}
-                hasWithdrawals={additionalContribution === 'Withdrawals' || additionalContribution === 'Both'}
-                breakdownType={breakdownType}
-              />
-            </div>
-          )}
-          
-          {viewMode === 'summary' && (
-            <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg">
-              <p className="text-gray-400 mb-4 text-sm sm:text-base">Summary of your investment:</p>
-              <ul className="space-y-2 text-sm sm:text-base">
-                <li>Initial investment: {formatCurrency(initialInvestment)}</li>
-                <li>Interest rate: {interestRate}% compounded {compoundFrequency.toLowerCase()}</li>
-                <li>Investment period: {years} years {months > 0 ? `and ${months} months` : ''}</li>
-                
-                {(additionalContribution === 'Deposits' || additionalContribution === 'Both') && (
-                  <>
-                    <li>Total contributions: {formatCurrency(totalContributions)}</li>
-                    <li>Contribution frequency: {depositFrequency}</li>
-                    <li>Contributions made at: {depositTiming} of period</li>
-                    {parseFloat(annualDepositIncreaseStr) > 0 && (
-                      <li>Annual deposit increase: {annualDepositIncrease}%</li>
-                    )}
-                  </>
-                )}
-                
-                {(additionalContribution === 'Withdrawals' || additionalContribution === 'Both') && yearlyBreakdown.length > 0 && (
-                  <>
-                    <li>Total withdrawals: {formatCurrency(yearlyBreakdown[yearlyBreakdown.length - 1].totalWithdrawals || 0)}</li>
-                    <li>Withdrawal frequency: {withdrawalFrequency}</li>
-                    {parseFloat(annualWithdrawalIncreaseStr) > 0 && (
-                      <li>Annual withdrawal increase: {annualWithdrawalIncrease}%</li>
-                    )}
-                  </>
-                )}
-                
-                <li>Final balance: {formatCurrency(futureValue)}</li>
-                <li>Total interest earned: {formatCurrency(totalInterest)}</li>
-              </ul>
             </div>
           )}
         </div>

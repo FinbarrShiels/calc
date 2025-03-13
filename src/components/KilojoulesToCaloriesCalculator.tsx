@@ -5,7 +5,7 @@ import { Calculator } from '@/data/calculators';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, BarElement } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
@@ -288,9 +288,9 @@ const KilojoulesToCaloriesCalculator: React.FC<KilojoulesToCaloriesCalculatorPro
           )}
           
           {/* Conversion Explanation */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Conversion Formulas</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li>• 1 kilojoule (kJ) = 0.239006 kilocalories (kcal)</li>
               <li>• 1 kilojoule (kJ) = 239.006 small calories (cal)</li>
               <li>• 1 kilocalorie (kcal) = 4.184 kilojoules (kJ)</li>
@@ -307,13 +307,13 @@ const KilojoulesToCaloriesCalculator: React.FC<KilojoulesToCaloriesCalculatorPro
       <h2 className="calculator-section-header">Results</h2>
           
           {/* Conversion Result */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {conversionType === 'kj-to-cal' 
                 ? `${kilojoules || '0'} kilojoules equals`
                 : `${calories || '0'} ${calorieType === 'food' ? 'kilocalories' : 'calories'} equals`}
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {formatNumber(result)}
             </div>
             <div className="mt-1 text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -332,25 +332,25 @@ const KilojoulesToCaloriesCalculator: React.FC<KilojoulesToCaloriesCalculatorPro
               {conversionType === 'kj-to-cal' ? (
                 <>
                   <div className="flex justify-between items-center">
-                    <span className={resultLabelClasses}>100 kJ</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">100 kJ</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                       = {calorieType === 'food' ? '23.9' : '23,901'} {calorieType === 'food' ? 'kcal' : 'cal'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={resultLabelClasses}>500 kJ</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">500 kJ</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                       = {calorieType === 'food' ? '119.5' : '119,503'} {calorieType === 'food' ? 'kcal' : 'cal'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={resultLabelClasses}>1,000 kJ</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">1,000 kJ</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                       = {calorieType === 'food' ? '239.0' : '239,006'} {calorieType === 'food' ? 'kcal' : 'cal'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={resultLabelClasses}>8,700 kJ</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">8,700 kJ</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                       = {calorieType === 'food' ? '2,079.4' : '2,079,352'} {calorieType === 'food' ? 'kcal' : 'cal'}
                     </span>
@@ -359,25 +359,25 @@ const KilojoulesToCaloriesCalculator: React.FC<KilojoulesToCaloriesCalculatorPro
               ) : (
                 <>
                   <div className="flex justify-between items-center">
-                    <span className={resultLabelClasses}>100 {calorieType === 'food' ? 'kcal' : 'cal'}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">100 {calorieType === 'food' ? 'kcal' : 'cal'}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                       = {calorieType === 'food' ? '418.4' : '0.42'} kJ
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={resultLabelClasses}>500 {calorieType === 'food' ? 'kcal' : 'cal'}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">500 {calorieType === 'food' ? 'kcal' : 'cal'}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                       = {calorieType === 'food' ? '2,092.0' : '2.09'} kJ
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={resultLabelClasses}>1,000 {calorieType === 'food' ? 'kcal' : 'cal'}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">1,000 {calorieType === 'food' ? 'kcal' : 'cal'}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                       = {calorieType === 'food' ? '4,184.0' : '4.18'} kJ
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={resultLabelClasses}>2,000 {calorieType === 'food' ? 'kcal' : 'cal'}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">2,000 {calorieType === 'food' ? 'kcal' : 'cal'}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                       = {calorieType === 'food' ? '8,368.0' : '8.37'} kJ
                     </span>
@@ -400,25 +400,25 @@ const KilojoulesToCaloriesCalculator: React.FC<KilojoulesToCaloriesCalculatorPro
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Average Daily Energy Requirements</h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Adult male (moderately active)</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Adult male (moderately active)</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   10,000 kJ (2,390 kcal)
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Adult female (moderately active)</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Adult female (moderately active)</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   8,000 kJ (1,912 kcal)
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Teenager (14-18 years)</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Teenager (14-18 years)</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   11,000 kJ (2,629 kcal)
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>Child (9-13 years)</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Child (9-13 years)</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   8,500 kJ (2,032 kcal)
                 </span>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import AmortizationChart from '@/components/AmortizationChart';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface PaymentRow {
   paymentNumber: number;
@@ -386,30 +386,30 @@ const AmortizationCalculator = () => {
           <div className="grid grid-cols-1 gap-4">
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
               <h3 className="text-sm font-medium text-gray-400 mb-1">Monthly Payment</h3>
-              <p className={resultValueClasses}>{formatCurrency(monthlyPayment)}</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(monthlyPayment)}</p>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-400 mb-1">Total Principal</h3>
-                <p className={resultValueClasses}>{formatCurrency(loanAmount)}</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(loanAmount)}</p>
               </div>
               
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-400 mb-1">Total Interest</h3>
-                <p className={resultValueClasses}>{formatCurrency(totalInterest)}</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(totalInterest)}</p>
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-400 mb-1">Total Payments</h3>
-                <p className={resultValueClasses}>{formatCurrency(loanAmount + totalInterest)}</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatCurrency(loanAmount + totalInterest)}</p>
               </div>
               
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-gray-400 mb-1">Payoff Date</h3>
-                <p className={resultValueClasses}>{formatDate(payoffDate)}</p>
+                <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{formatDate(payoffDate)}</p>
               </div>
             </div>
           </div>
@@ -419,7 +419,7 @@ const AmortizationCalculator = () => {
       {/* Chart and Table Controls */}
       <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-md">
         <div className="flex flex-wrap justify-between items-center mb-4">
-          <h2 className={resultValueClasses}>Amortization Schedule</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">Amortization Schedule</h2>
           
           <div className="flex space-x-4 mt-2 sm:mt-0">
             <div>

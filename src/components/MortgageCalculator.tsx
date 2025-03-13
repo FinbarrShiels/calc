@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Calculator } from '@/data/calculators';
 import { Chart } from 'chart.js/auto';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface MortgageCalculatorProps {
   calculator?: Calculator;
@@ -295,7 +295,7 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ calculator }) =
       <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 p-6">
         {/* Left Box - Inputs */}
         <div className="calculator-card-alt p-4 sm:p-6 rounded-lg shadow-lg">
-          <h2 className={calculatorSectionHeaderClasses}>Mortgage Calculator</h2>
+          <h2 className="calculator-section-header">Mortgage Calculator</h2>
           
           <div className="space-y-4">
             <div>
@@ -304,7 +304,7 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ calculator }) =
               </label>
               <select
                 id="currency"
-                className={inputClasses}
+                className="calculator-input"
                 value={selectedCurrency}
                 onChange={handleCurrencyChange}
               >
@@ -325,7 +325,7 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ calculator }) =
                 <input
                   type="tel"
                   id="homePrice"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={homePrice} {...numericInputProps}
                   onChange={(e) => setHomePrice(Number(e.target.value))}
                 />
@@ -341,7 +341,7 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ calculator }) =
                 <input
                   type="tel"
                   id="downPayment"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={downPayment} {...numericInputProps}
                   onChange={(e) => setDownPayment(Number(e.target.value))}
                 />
@@ -356,7 +356,7 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ calculator }) =
                 <input
                   type="tel"
                   id="interestRate"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={interestRate} {...numericInputProps}
                   onChange={(e) => setInterestRate(Number(e.target.value))}
                 />
@@ -370,7 +370,7 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ calculator }) =
               </label>
               <select
                 id="loanTerm"
-                className={inputClasses}
+                className="calculator-input"
                 value={loanTerm}
                 onChange={(e) => setLoanTerm(Number(e.target.value))}
               >
@@ -387,26 +387,26 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ calculator }) =
         
         {/* Right Box - Results */}
         <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
-          <h2 className={calculatorSectionHeaderClasses}>Results</h2>
+          <h2 className="calculator-section-header">Results</h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 sm:mb-8">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Total Loan Cost</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Loan Cost</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">{formatCurrency(totalLoanCost)}</div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Total Interest</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Interest</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">{formatCurrency(totalInterest)}</div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Total Loan Amount</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Loan Amount</div>
               <div className="text-xl sm:text-2xl font-bold text-orange-400">{formatCurrency(loanAmount)}</div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Monthly Payment</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Monthly Payment</div>
               <div className="text-xl sm:text-2xl font-bold text-purple-400">{formatCurrency(monthlyPayment)}</div>
             </div>
           </div>
@@ -414,7 +414,7 @@ const MortgageCalculator: React.FC<MortgageCalculatorProps> = ({ calculator }) =
           <div>
             {/* Repayment Schedule Title and Toggle Buttons */}
             <div className="flex flex-wrap items-center justify-between mb-4">
-              <h3 className={calculatorSectionHeaderClasses}>Repayment Schedule</h3>
+              <h3 className="calculator-section-header">Repayment Schedule</h3>
               <div className="flex space-x-2 mt-2 sm:mt-0">
                 <div className="flex rounded-md overflow-hidden">
                   <button

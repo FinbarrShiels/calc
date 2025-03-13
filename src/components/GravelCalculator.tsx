@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface GravelCalculatorProps {
   calculator?: Calculator;
@@ -328,12 +328,12 @@ const GravelCalculator: React.FC<GravelCalculatorProps> = ({ calculator }) => {
           
           {/* Material Info - Only visible on desktop */}
           <div className="hidden md:block">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Material Information</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Different materials have different densities, which affects the weight and amount needed:
               </p>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Gravel (1/4"-2"):</strong> ~1.4 tons per cubic yard</li>
                 <li><strong>Gravel-Sand Mix:</strong> ~1.5 tons per cubic yard</li>
                 <li><strong>Sand:</strong> ~1.3 tons per cubic yard</li>
@@ -349,40 +349,40 @@ const GravelCalculator: React.FC<GravelCalculatorProps> = ({ calculator }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Volume in Cubic Yards */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Volume (Cubic Yards)
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(volumeCubicYards)} yd³
               </div>
             </div>
             
             {/* Volume in Cubic Meters */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Volume (Cubic Meters)
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(volumeCubicMeters)} m³
               </div>
             </div>
             
             {/* Weight in Tons */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Weight ({unitSystem === 'imperial' ? 'US Tons' : 'Tonnes'})
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(weightTons)} {unitSystem === 'imperial' ? 'tons' : 'tonnes'}
               </div>
             </div>
             
             {/* Weight in Kilograms */}
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Weight (Kilograms)
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(weightKg)} kg
               </div>
             </div>
@@ -390,13 +390,13 @@ const GravelCalculator: React.FC<GravelCalculatorProps> = ({ calculator }) => {
             {/* Total Price (only shown if price calculation is enabled) */}
             {includePriceCalculation && (
               <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md sm:col-span-2">
-                <div className={resultLabelClasses}>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Total Cost
                 </div>
-                <div className={resultValueClasses}>
+                <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                   {formatCurrency(totalPrice)}
                 </div>
-                <div className={resultLabelClasses}>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Based on {formatCurrency(parseFloat(pricePerUnit) || 0)} per {unitSystem === 'imperial' ? 'cubic yard' : 'cubic meter'}
                 </div>
               </div>
@@ -405,12 +405,12 @@ const GravelCalculator: React.FC<GravelCalculatorProps> = ({ calculator }) => {
           
           {/* Material Info - Only visible on mobile */}
           <div className="block md:hidden">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Material Information</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Different materials have different densities, which affects the weight and amount needed:
               </p>
-              <ul className={resultLabelClasses}>
+              <ul className="text-sm text-gray-600 dark:text-gray-300">
                 <li><strong>Gravel (1/4"-2"):</strong> ~1.4 tons per cubic yard</li>
                 <li><strong>Gravel-Sand Mix:</strong> ~1.5 tons per cubic yard</li>
                 <li><strong>Sand:</strong> ~1.3 tons per cubic yard</li>
@@ -421,7 +421,7 @@ const GravelCalculator: React.FC<GravelCalculatorProps> = ({ calculator }) => {
           {/* Usage Tips */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Usage Tips</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li><strong>Driveways:</strong> 4-6 inches depth recommended</li>
               <li><strong>Walkways:</strong> 2-3 inches depth recommended</li>
               <li><strong>Landscaping:</strong> 2-4 inches depth recommended</li>

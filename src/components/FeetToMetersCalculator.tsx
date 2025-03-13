@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface FeetToMetersCalculatorProps {
   calculator?: Calculator;
@@ -77,7 +77,7 @@ const FeetToMetersCalculator: React.FC<FeetToMetersCalculatorProps> = ({ calcula
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
       <div className="p-6">
-        <h2 className={calculatorSectionHeaderClasses}>Feet to Meters Calculator</h2>
+        <h2 className="calculator-section-header">Feet to Meters Calculator</h2>
         
         <div className="calculator-card-alt p-6 rounded-lg shadow-lg mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -89,7 +89,7 @@ const FeetToMetersCalculator: React.FC<FeetToMetersCalculatorProps> = ({ calcula
                 <input
                   type="tel"
                   id="feet"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={feetStr} {...numericInputProps}
                   onChange={handleFeetChange}
                 />
@@ -105,7 +105,7 @@ const FeetToMetersCalculator: React.FC<FeetToMetersCalculatorProps> = ({ calcula
                 <input
                   type="tel"
                   id="inches"
-                  className={inputClasses}
+                  className="calculator-input"
                   value={inchesStr} {...numericInputProps}
                   onChange={handleInchesChange}
                 />
@@ -120,7 +120,7 @@ const FeetToMetersCalculator: React.FC<FeetToMetersCalculatorProps> = ({ calcula
             </label>
             <select
               id="precision"
-              className={inputClasses}
+              className="calculator-input"
               value={precision}
               onChange={handlePrecisionChange}
             >
@@ -134,32 +134,32 @@ const FeetToMetersCalculator: React.FC<FeetToMetersCalculatorProps> = ({ calcula
         </div>
         
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Conversion Results</h3>
+          <h3 className="calculator-section-header">Conversion Results</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Feet and Inches</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Feet and Inches</div>
               <div className="text-xl sm:text-2xl font-bold text-blue-400">
                 {feetStr === '' ? '0' : parseFloat(feetStr).toLocaleString()} ft {inchesStr === '' ? '0' : parseFloat(inchesStr).toLocaleString()} in
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Meters</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Meters</div>
               <div className="text-xl sm:text-2xl font-bold text-green-400">
                 {meters.toFixed(precision)} m
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
-              <div className={resultLabelClasses}>Centimeters</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Centimeters</div>
               <div className="text-xl sm:text-2xl font-bold text-orange-400">
                 {centimeters.toFixed(precision)} cm
               </div>
             </div>
             
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg md:col-span-2">
-              <div className={resultLabelClasses}>Conversion Formula</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Conversion Formula</div>
               <div className="text-md font-medium text-gray-300 mt-1">
                 {feetStr === '' ? '0' : parseFloat(feetStr).toLocaleString()} feet × 0.3048 = {(feetStr === '' ? 0 : parseFloat(feetStr) * METERS_PER_FOOT).toFixed(precision)} meters
               </div>
@@ -178,7 +178,7 @@ const FeetToMetersCalculator: React.FC<FeetToMetersCalculatorProps> = ({ calcula
         </div>
         
         <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className={calculatorSectionHeaderClasses}>Common Conversions</h3>
+          <h3 className="calculator-section-header">Common Conversions</h3>
           
           <div className="overflow-x-auto">
             <table className="calculator-table">

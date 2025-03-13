@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 interface MilesPerKwhCalculatorProps {
   calculator?: Calculator;
@@ -371,12 +371,12 @@ const MilesPerKwhCalculator: React.FC<MilesPerKwhCalculatorProps> = ({ calculato
           
           {/* Info Box - Only visible on desktop */}
           <div className="hidden md:block">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">About EV Efficiency</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Electric vehicle efficiency is typically measured in miles per kilowatt-hour (mi/kWh) or kilowatt-hours per 100 miles (kWh/100mi).
               </p>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Higher mi/kWh or lower kWh/100mi values indicate better efficiency. MPGe (Miles Per Gallon equivalent) is used to compare electric vehicles to gas vehicles.
               </p>
             </div>
@@ -389,56 +389,56 @@ const MilesPerKwhCalculator: React.FC<MilesPerKwhCalculatorProps> = ({ calculato
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Miles per kWh
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(milesPerKwh)} mi/kWh
               </div>
             </div>
             
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 kWh per 100 miles
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(kwhPer100Miles)} kWh/100mi
               </div>
             </div>
             
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 kWh per 100 km
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(kwhPer100Km)} kWh/100km
               </div>
             </div>
             
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Watt-hours per mile
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(whPerMile)} Wh/mi
               </div>
             </div>
             
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 MPGe
               </div>
-              <div className={resultValueClasses}>
+              <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                 {formatNumber(mpge)} MPGe
               </div>
             </div>
             
             {activeView === 'standard' && (
               <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-                <div className={resultLabelClasses}>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Total Cost
                 </div>
-                <div className={resultValueClasses}>
+                <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
                   {formatCurrency(totalCost)}
                 </div>
               </div>
@@ -447,12 +447,12 @@ const MilesPerKwhCalculator: React.FC<MilesPerKwhCalculatorProps> = ({ calculato
           
           {/* Info Box - Only visible on mobile */}
           <div className="block md:hidden">
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">About EV Efficiency</h3>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Electric vehicle efficiency is typically measured in miles per kilowatt-hour (mi/kWh) or kilowatt-hours per 100 miles (kWh/100mi).
               </p>
-              <p className={resultLabelClasses}>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Higher mi/kWh or lower kWh/100mi values indicate better efficiency. MPGe (Miles Per Gallon equivalent) is used to compare electric vehicles to gas vehicles.
               </p>
             </div>

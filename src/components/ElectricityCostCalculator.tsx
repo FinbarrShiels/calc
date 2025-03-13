@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator } from '@/data/calculators';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 interface ElectricityCostCalculatorProps {
   calculator?: Calculator;
@@ -341,7 +341,7 @@ const ElectricityCostCalculator: React.FC<ElectricityCostCalculatorProps> = ({ c
       <h2 className="calculator-section-header">Results</h2>
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-6 rounded-md">
-            <h3 className={calculatorSectionHeaderClasses}>Energy Consumption</h3>
+            <h3 className="calculator-section-header">Energy Consumption</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Daily:</span>
@@ -363,7 +363,7 @@ const ElectricityCostCalculator: React.FC<ElectricityCostCalculatorProps> = ({ c
           </div>
           
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-6 rounded-md">
-            <h3 className={calculatorSectionHeaderClasses}>Electricity Cost</h3>
+            <h3 className="calculator-section-header">Electricity Cost</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Daily:</span>
@@ -384,7 +384,7 @@ const ElectricityCostCalculator: React.FC<ElectricityCostCalculatorProps> = ({ c
             </div>
           </div>
           
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Energy Saving Tips</h3>
             <ul className="list-disc pl-5 space-y-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
               <li>Use energy-efficient appliances with high Energy Star ratings</li>

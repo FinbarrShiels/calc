@@ -5,7 +5,7 @@ import { Calculator } from '@/data/calculators';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -321,12 +321,12 @@ const WHRCalculator: React.FC<WHRCalculatorProps> = ({ calculator }) => {
           </div>
           
           {/* WHR Formula */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">WHR Formula</h3>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               WHR = Waist Circumference ÷ Hip Circumference
             </p>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               <strong>Example:</strong> If your waist is 30 inches and your hip is 36 inches, your WHR is 30 ÷ 36 = 0.83
             </p>
           </div>
@@ -337,11 +337,11 @@ const WHRCalculator: React.FC<WHRCalculatorProps> = ({ calculator }) => {
       <h2 className="calculator-section-header">Results</h2>
           
           {/* WHR Result */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Your Waist-to-Hip Ratio (WHR)
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {whr.toFixed(2)}
             </div>
             {riskCategory && (
@@ -357,7 +357,7 @@ const WHRCalculator: React.FC<WHRCalculatorProps> = ({ calculator }) => {
               <div className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200 mb-1">
                 Health Risk Assessment
               </div>
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 {riskDescription}
               </div>
             </div>
@@ -365,7 +365,7 @@ const WHRCalculator: React.FC<WHRCalculatorProps> = ({ calculator }) => {
           
           {/* Ideal Waist Size */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Ideal Waist Size for Your Hip Measurement
             </div>
             <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -393,7 +393,7 @@ const WHRCalculator: React.FC<WHRCalculatorProps> = ({ calculator }) => {
               {(gender === 'male' ? maleRiskCategories : femaleRiskCategories).map((category, index) => (
                 <div key={index} className="flex items-center">
                   <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: category.color }}></div>
-                  <span className={resultLabelClasses}>{category.label}: {category.range[0]} to {category.range[1] === 3.0 ? 'above' : category.range[1]}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{category.label}: {category.range[0]} to {category.range[1] === 3.0 ? 'above' : category.range[1]}</span>
                 </div>
               ))}
             </div>
@@ -402,7 +402,7 @@ const WHRCalculator: React.FC<WHRCalculatorProps> = ({ calculator }) => {
           {/* Health Tips */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Tips to Improve Your WHR</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li>• Regular cardiovascular exercise</li>
               <li>• Strength training to build muscle</li>
               <li>• Balanced diet rich in fruits, vegetables, and lean proteins</li>

@@ -2,3 +2,4 @@ Start all chats with robot emoji and then continue to use the emoji in chats to 
 New pages created should have the same width as the main page.
 When new calculators are built they will follow the design style and colour accents of the calculators in like Compound Interest Calculator
 Use Tailwind CSS
+No need to start dev server as its always running.

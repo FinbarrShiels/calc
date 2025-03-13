@@ -5,7 +5,7 @@ import { Calculator } from '@/data/calculators';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, BarElement } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { decimalInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses } from '@/utils/themeUtils';
+
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
@@ -428,12 +428,12 @@ const MilesToStepsCalculator: React.FC<MilesToStepsCalculatorProps> = ({ calcula
           )}
           
           {/* Stride Length Explanation */}
-          <div className={buttonClasses}>
+          <div className="calculator-button">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">What is Stride Length?</h3>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Stride length is the distance covered from the heel print of one foot to the heel print of the same foot when taking a step. It's typically measured in inches or centimeters.
             </p>
-            <p className={resultLabelClasses}>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Your stride length is influenced by your height, gender, walking speed, and fitness level. Taller individuals and men typically have longer strides.
             </p>
           </div>
@@ -444,11 +444,11 @@ const MilesToStepsCalculator: React.FC<MilesToStepsCalculatorProps> = ({ calcula
       <h2 className="calculator-section-header">Results</h2>
           
           {/* Total Steps Result */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Total Steps for {distance} {unitSystem === 'imperial' ? 'miles' : 'kilometers'}
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {formatNumber(totalSteps)}
             </div>
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
@@ -458,7 +458,7 @@ const MilesToStepsCalculator: React.FC<MilesToStepsCalculatorProps> = ({ calcula
           
           {/* Steps per Mile */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Steps per {unitSystem === 'imperial' ? 'Mile' : 'Kilometer'}
             </div>
             <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -469,7 +469,7 @@ const MilesToStepsCalculator: React.FC<MilesToStepsCalculatorProps> = ({ calcula
           {/* Stride Length (if calculated from height) */}
           {calculationMethod === 'height' && (
             <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-              <div className={resultLabelClasses}>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 Estimated Stride Length
               </div>
               <div className="text-xl font-medium text-gray-900 dark:text-white dark:text-gray-200">
@@ -494,25 +494,25 @@ const MilesToStepsCalculator: React.FC<MilesToStepsCalculatorProps> = ({ calcula
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Common Step Goals</h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>5,000 steps</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">5,000 steps</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   ≈ {formatNumber(Math.round(5000 / stepsPerMile * 100) / 100)} miles
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>7,500 steps</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">7,500 steps</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   ≈ {formatNumber(Math.round(7500 / stepsPerMile * 100) / 100)} miles
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>10,000 steps</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">10,000 steps</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   ≈ {formatNumber(Math.round(10000 / stepsPerMile * 100) / 100)} miles
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={resultLabelClasses}>15,000 steps</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">15,000 steps</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white dark:text-gray-200">
                   ≈ {formatNumber(Math.round(15000 / stepsPerMile * 100) / 100)} miles
                 </span>
@@ -523,7 +523,7 @@ const MilesToStepsCalculator: React.FC<MilesToStepsCalculatorProps> = ({ calcula
           {/* Tips */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Tips for Increasing Your Daily Steps</h3>
-            <ul className={resultLabelClasses}>
+            <ul className="text-sm text-gray-600 dark:text-gray-300">
               <li>• Take the stairs instead of the elevator</li>
               <li>• Park farther away from entrances</li>
               <li>• Walk during phone calls</li>

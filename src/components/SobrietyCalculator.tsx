@@ -6,7 +6,7 @@ import { format, differenceInDays, differenceInMonths, differenceInYears, differ
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { numericInputProps } from '@/utils/inputUtils';
-import { inputClasses, selectClasses, buttonClasses, secondaryButtonClasses, cardClasses, labelClasses, inputPrefixClasses, inputSuffixClasses , resultDisplayClasses, resultValueClasses, resultLabelClasses, currencyButtonActiveClasses, currencyButtonInactiveClasses, calculatorSectionHeaderClasses} from '@/utils/themeUtils';
+
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -219,14 +219,14 @@ const SobrietyCalculator: React.FC<SobrietyCalculatorProps> = ({ calculator }) =
           
           {/* Upcoming Milestone */}
           {nextMilestone && (
-            <div className={buttonClasses}>
+            <div className="calculator-button">
               <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Your Next Milestone</h3>
               <div className="flex items-center justify-center mb-4">
                 <div className="w-32 h-32">
                   <Doughnut data={chartData} options={chartOptions} />
                   <div className="relative w-full h-0 top-[-65px] flex items-center justify-center">
                     <div className="text-center">
-                      <div className={resultValueClasses}>{daysUntilNextMilestone}</div>
+                      <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">{daysUntilNextMilestone}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">days left</div>
                     </div>
                   </div>
@@ -236,7 +236,7 @@ const SobrietyCalculator: React.FC<SobrietyCalculatorProps> = ({ calculator }) =
                 <div className="text-lg font-medium text-gray-900 dark:text-white dark:text-primary-foreground">
                   {nextMilestone.title}
                 </div>
-                <div className={resultLabelClasses}>
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   {nextMilestone.description}
                 </div>
                 <div className="text-sm font-medium text-gray-900 dark:text-white dark:text-blue-400 mt-2">
@@ -262,11 +262,11 @@ const SobrietyCalculator: React.FC<SobrietyCalculatorProps> = ({ calculator }) =
       <h2 className="calculator-section-header">Your Sobriety Time</h2>
           
           {/* Total Sobriety Time */}
-          <div className={buttonClasses}>
-            <div className={resultLabelClasses}>
+          <div className="calculator-button">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               You have been sober for
             </div>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               {totalDays} days
             </div>
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">
@@ -276,7 +276,7 @@ const SobrietyCalculator: React.FC<SobrietyCalculatorProps> = ({ calculator }) =
           
           {/* Detailed Time */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted p-4 rounded-md">
-            <div className={resultLabelClasses}>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Detailed Time
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
@@ -337,11 +337,11 @@ const SobrietyCalculator: React.FC<SobrietyCalculatorProps> = ({ calculator }) =
               {getHealthBenefits().map((benefit, index) => (
                 <li key={index} className="flex items-start">
                   <span className="text-green-500 mr-2">✓</span>
-                  <span className={resultLabelClasses}>{benefit}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{benefit}</span>
                 </li>
               ))}
               {getHealthBenefits().length === 0 && (
-                <li className={resultLabelClasses}>
+                <li className="text-sm text-gray-600 dark:text-gray-300">
                   Health benefits will appear as you progress in your sobriety journey.
                 </li>
               )}
@@ -351,7 +351,7 @@ const SobrietyCalculator: React.FC<SobrietyCalculatorProps> = ({ calculator }) =
           {/* Money Saved */}
           <div className="bg-gray-100/50 dark:bg-gray-800/50 dark:bg-muted/50 p-4 rounded-md">
             <h3 className="text-md font-semibold text-gray-900 dark:text-white dark:text-primary-foreground mb-2">Potential Money Saved</h3>
-            <div className={resultValueClasses}>
+            <div className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
               ${calculateMoneySaved().toLocaleString()}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">
